@@ -1,6 +1,7 @@
 package com.baijiahulian.live.ui.speakerspanel;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -25,18 +26,15 @@ import com.baijiahulian.live.ui.utils.QueryPlus;
 import com.baijiahulian.live.ui.utils.RxUtils;
 import com.baijiahulian.live.ui.utils.VideoDefinitionUtil;
 import com.baijiahulian.live.ui.viewsupport.BJTouchHorizontalScrollView;
-
 import com.baijiayun.livecore.context.LPConstants;
 import com.baijiayun.livecore.models.imodels.IMediaModel;
 import com.baijiayun.livecore.models.imodels.IUserModel;
 import com.baijiayun.livecore.ppt.photoview.OnDoubleTapListener;
 import com.baijiayun.livecore.ppt.photoview.OnViewTapListener;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -115,9 +113,9 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
         super.onResume();
         if (attachAudioOnResume) {
             attachAudioOnResume = false;
-            if (!presenter.getRecorder().isPublishing())
+            if (presenter.getRecorder() != null && !presenter.getRecorder().isPublishing())
                 presenter.getRecorder().publish();
-            if (!presenter.getRecorder().isAudioAttached())
+            if (presenter.getRecorder() != null && !presenter.getRecorder().isAudioAttached())
                 presenter.getRecorder().attachAudio();
         }
         Disposable timer = Observable.timer(300, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread())
@@ -126,6 +124,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
                     public void accept(Long aLong) {
                         if (attachVideoOnResume) {
                             attachVideoOnResume = false;
+                            if (presenter.getRecorder() == null) return;
                             if (!presenter.getRecorder().isPublishing())
                                 presenter.getRecorder().publish();
                             if (!presenter.getRecorder().isVideoAttached())
@@ -192,7 +191,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
                 presenter.getPlayer().playVideo(presenter.getItem(position), videoView.getLpVideoView());
                 updateAwardTv(videoView, model);
             } else {
-//                presenter.getPlayer().playAVClose(presenter.getItem(position));
+                presenter.getPlayer().playAVClose(presenter.getItem(position));
                 if (model.isAudioOn())
                     presenter.getPlayer().playAudio(presenter.getItem(position));
                 if (model.getUser() == null) return;
@@ -243,12 +242,14 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
                     VideoView videoView;
                     if (!(addView instanceof VideoView)) {
                         videoView = new VideoView(getContext(), presenter.isNeedLoading(userId));
+                        videoView.getLpVideoView().setZOrderMediaOverlay(true);
                         videoView.setName(appendName(presenterSpeakModel.getUser(), true));
                         // 拉流
                         presenter.getPlayer().playVideo(presenter.getItem(position), videoView.getLpVideoView());
                     } else {
                         videoView = (VideoView) addView;
                         videoView.setName(appendName(presenterSpeakModel.getUser(), true));
+                        videoView.getLpVideoView().setWaterMark(presenter.getWaterMark());
                     }
                     updateAwardTv(videoView, presenterSpeakModel);
                     container.addView(videoView, position, lpItem);
@@ -280,6 +281,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
                     recorderView.setAwardTvVisibility(View.GONE);
                 }
                 container.addView(recorderView, position, lpItem);
+                recorderView.getCameraView().setZOrderMediaOverlay(true);
 
                 final GestureDetector gestureDetector1 = new GestureDetector(getActivity(), new ClickGestureDetector(RECORD_TAG));
                 recorderView.setOnTouchListener((v, event) -> {
@@ -304,13 +306,14 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
                 IMediaModel model = presenter.getSpeakModel(position);
                 VideoView videoView;
                 if (!(addView instanceof VideoView)) {
-                    videoView = new VideoView(getContext(), presenter.isNeedLoading(model.getUser().getUserId()));
+                    videoView = new VideoView(getContext(), presenter.isNeedLoading(model.getMediaId()));
                     videoView.setName(appendName(model.getUser(), false));
                     // 拉流
                     presenter.getPlayer().playVideo(presenter.getItem(position), videoView.getLpVideoView());
                 } else {
                     videoView = (VideoView) addView;
                     videoView.setName(appendName(model.getUser(), false));
+                    videoView.getLpVideoView().setWaterMark(null);
                 }
                 updateAwardTv(videoView, model);
                 videoView.setAwardCount(presenter.getRewardCount(model.getUser().getNumber()));
@@ -387,6 +390,8 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
                 presenter.getRecorder().detachVideo();
             }
             presenter.setIsStopPublish(false);
+        } else {
+            presenter.getPlayer().playAVClose(presenter.getItem(position));
         }
         if (speakerRequest.getVisibility() == View.VISIBLE) {
             speakerRequest.setVisibility(View.GONE);
@@ -431,7 +436,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
             if (model.isVideoOn() && presenter.isAutoPlay()) {
                 String userId = TextUtils.isEmpty(model.getMediaId()) ? model.getUser().getUserId() : model.getMediaId();
 
-                if (videoView == null || !(videoView instanceof VideoView))
+                if (!(videoView instanceof VideoView))
                     videoView = new VideoView(getContext(), presenter.isNeedLoading(userId));
                 ((VideoView) videoView).setName(appendName(model.getUser(), true));
 
@@ -461,7 +466,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
         } else if (viewType == VIEW_TYPE_VIDEO_PLAY) {
             IMediaModel model = presenter.getSpeakModel(position);
 
-            if (videoView == null || !(videoView instanceof VideoView))
+            if (!(videoView instanceof VideoView))
                 videoView = new VideoView(getActivity(), presenter.isNeedLoading(model.getUser().getUserId()));
             ((VideoView) videoView).setName(appendName(model.getUser(), false));
 
@@ -520,6 +525,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
             ((VideoView) view).getLpVideoView().setZOrderMediaOverlay(true);
             ((VideoView) view).setAwardLayoutVisibility(View.VISIBLE);
             IMediaModel model = presenter.getSpeakModel(position);
+            if (model == null) return;
             if (model.getUser() != null && (model.getUser().getType() == LPConstants.LPUserType.Teacher || model.getUser().getType() == LPConstants.LPUserType.Assistant)) {
                 ((VideoView) view).setAwardTvVisibility(View.GONE);
             }
@@ -767,40 +773,39 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
                 break;
         }
         if (options.size() <= 0) return;
-        new MaterialDialog.Builder(getActivity())
+        Activity activity = getActivity();
+        if (activity == null) return;
+        new MaterialDialog.Builder(activity)
                 .items(options)
-                .itemsCallback(new MaterialDialog.ListCallback() {
-                    @Override
-                    public void onSelection(MaterialDialog materialDialog, View view, int i, CharSequence charSequence) {
-                        if (getActivity() == null) return;
-                        if (getString(R.string.live_close_video).equals(charSequence.toString())) {
-                            presenter.closeVideo(tag);
-                        } else if (getString(R.string.live_close_speaking).equals(charSequence.toString())) {
-                            presenter.closeSpeaking(tag);
-                        } else if (getString(R.string.live_open_video).equals(charSequence.toString())) {
-                            presenter.playVideo(tag);
-                        } else if (getString(R.string.live_full_screen).equals(charSequence.toString())) {
-                            presenter.setFullScreenTag(tag);
-                        } else if (getString(R.string.live_recorder_switch_camera).equals(charSequence.toString())) {
-                            presenter.switchCamera();
-                        } else if (getString(R.string.live_recorder_pretty_filter_off).equals(charSequence.toString())
-                                || getString(R.string.live_recorder_pretty_filter_on).equals(charSequence.toString())) {
-                            presenter.switchPrettyFilter();
-                        } else if (getString(R.string.live_switch_definitions).equals(charSequence.toString())) {
-                            showVideoDefinitionSwitchDialog(tag);
-                        } else if (getString(R.string.live_set_to_presenter).equals(charSequence.toString())) {
-                            presenter.requestPresenterChange(tag, true);
-                        } else if (getString(R.string.live_unset_presenter).equals(charSequence.toString())) {
-                            presenter.requestPresenterChange(tag, false);
-                        } else if (getString(R.string.live_set_auth_drawing).equals(charSequence.toString())) {
-                            presenter.requestStudentDrawingAuth(tag, true);
-                        } else if (getString(R.string.live_unset_auth_drawing).equals(charSequence.toString())) {
-                            presenter.requestStudentDrawingAuth(tag, false);
-                        } else if (getString(R.string.live_award).equals(charSequence.toString())) {
-                            presenter.requestAward(presenter.getSpeakModel(tag).getUser().getNumber());
-                        }
-                        materialDialog.dismiss();
+                .itemsCallback((materialDialog, view, i, charSequence) -> {
+                    if (getActivity() == null) return;
+                    if (getString(R.string.live_close_video).equals(charSequence.toString())) {
+                        presenter.closeVideo(tag);
+                    } else if (getString(R.string.live_close_speaking).equals(charSequence.toString())) {
+                        presenter.closeSpeaking(tag);
+                    } else if (getString(R.string.live_open_video).equals(charSequence.toString())) {
+                        presenter.playVideo(tag);
+                    } else if (getString(R.string.live_full_screen).equals(charSequence.toString())) {
+                        presenter.setFullScreenTag(tag);
+                    } else if (getString(R.string.live_recorder_switch_camera).equals(charSequence.toString())) {
+                        presenter.switchCamera();
+                    } else if (getString(R.string.live_recorder_pretty_filter_off).equals(charSequence.toString())
+                            || getString(R.string.live_recorder_pretty_filter_on).equals(charSequence.toString())) {
+                        presenter.switchPrettyFilter();
+                    } else if (getString(R.string.live_switch_definitions).equals(charSequence.toString())) {
+                        showVideoDefinitionSwitchDialog(tag);
+                    } else if (getString(R.string.live_set_to_presenter).equals(charSequence.toString())) {
+                        presenter.requestPresenterChange(tag, true);
+                    } else if (getString(R.string.live_unset_presenter).equals(charSequence.toString())) {
+                        presenter.requestPresenterChange(tag, false);
+                    } else if (getString(R.string.live_set_auth_drawing).equals(charSequence.toString())) {
+                        presenter.requestStudentDrawingAuth(tag, true);
+                    } else if (getString(R.string.live_unset_auth_drawing).equals(charSequence.toString())) {
+                        presenter.requestStudentDrawingAuth(tag, false);
+                    } else if (getString(R.string.live_award).equals(charSequence.toString())) {
+                        presenter.requestAward(presenter.getSpeakModel(tag).getUser().getNumber());
                     }
+                    materialDialog.dismiss();
                 })
                 .show();
     }

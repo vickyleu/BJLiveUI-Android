@@ -16,7 +16,16 @@
         android:id="@+id/fragment_left_menu_send_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginRight="@dimen/activity_live_room_margin"
         android:src="@drawable/live_ic_send_msg" />
+
+    <ImageView
+        android:id="@+id/fragment_left_menu_question_answer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:src="@drawable/live_ic_question_answer_normal"
+        />
 
     <TextView
         android:id="@+id/fragment_left_menu_stream"

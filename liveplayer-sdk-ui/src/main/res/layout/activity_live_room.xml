@@ -157,4 +157,30 @@
         android:visibility="gone"
         />
 
+    <FrameLayout
+        android:id="@+id/activity_show_toast"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:background="@color/live_text_color_mid_light"
+        >
+        <TextView
+            android:id="@+id/activity_toast_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/activity_live_room_dialog_margin"
+            android:textSize="14sp"
+            android:layout_gravity="center"
+            android:textColor="@color/live_white"
+            />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/activity_live_room_question_answer"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </FrameLayout>
 </RelativeLayout>

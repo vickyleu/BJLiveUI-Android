@@ -65,10 +65,10 @@ public class RightBottomMenuPresenter implements RightBottomMenuContract.Present
                 liveRoomRouterListener.getLiveRoom().getRecorder().stopPublishing();
             }
         } else {
+            liveRoomRouterListener.attachLocalVideo();
             if (!liveRoomRouterListener.getLiveRoom().getRecorder().isPublishing()) {
                 liveRoomRouterListener.getLiveRoom().getRecorder().publish();
             }
-            liveRoomRouterListener.attachLocalVideo();
         }
     }
 

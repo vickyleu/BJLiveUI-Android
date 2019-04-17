@@ -2,6 +2,7 @@ package com.baijiahulian.live.ui.leftmenu;
 
 import com.baijiahulian.live.ui.base.BasePresenter;
 import com.baijiahulian.live.ui.base.BaseView;
+import com.baijiayun.livecore.models.imodels.IUserModel;
 
 /**
  * Created by Shubo on 2017/2/15.
@@ -12,6 +13,8 @@ interface LeftMenuContract {
         void notifyClearScreenChanged(boolean isCleared);
 
         void showDebugBtn();
+
+        void showQuestionAnswerInfo(boolean showRed);
     }
 
     interface Presenter extends BasePresenter {
@@ -36,5 +39,11 @@ interface LeftMenuContract {
         void showStreamDebugPanel();
 
         void showCopyLogDebugPanel();
+
+        boolean isEnableLiveQuestionAnswer();
+
+        void showQuestionAnswer();
+
+        IUserModel getCurrentUser();
     }
 }

@@ -1,7 +1,5 @@
 package com.baijiahulian.live.ui.speakerspanel;
 
-import android.view.View;
-
 import com.baijiahulian.live.ui.base.BasePresenter;
 import com.baijiahulian.live.ui.base.BaseView;
 import com.baijiahulian.live.ui.ppt.MyPPTView;

@@ -6,6 +6,7 @@ import com.baijiahulian.common.networkv2.HttpException;
 import com.baijiahulian.live.ui.activity.LiveRoomRouterListener;
 import com.baijiahulian.live.ui.utils.RxUtils;
 import com.baijiayun.livecore.context.LPConstants;
+import com.baijiayun.livecore.models.LPMessageTranslateModel;
 import com.baijiayun.livecore.models.LPShortResult;
 import com.baijiayun.livecore.models.LPUploadDocModel;
 import com.baijiayun.livecore.models.imodels.IMessageModel;
@@ -15,9 +16,9 @@ import com.baijiayun.livecore.utils.LPJsonUtils;
 import com.baijiayun.livecore.utils.LPLogger;
 import com.google.gson.JsonObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -35,15 +36,17 @@ public class ChatPresenter implements ChatContract.Presenter {
 
     private LiveRoomRouterListener routerListener;
     private ChatContract.View view;
-    private Disposable subscriptionOfDataChange, subscriptionOfMessageReceived;
+    private Disposable subscriptionOfDataChange, subscriptionOfMessageReceived, subscribeOfTranslateMessage;
     private LinkedBlockingQueue<UploadingImageModel> imageMessageUploadingQueue;
     private ConcurrentHashMap<String, List<IMessageModel>> privateChatMessagePool;
+    private ConcurrentHashMap<String, LPMessageTranslateModel> translateMessageModels;
     private int receivedNewMessageNumber = 0;
 
     public ChatPresenter(ChatContract.View view) {
         this.view = view;
         privateChatMessagePool = new ConcurrentHashMap<>();
         imageMessageUploadingQueue = new LinkedBlockingQueue<>();
+        translateMessageModels = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -85,7 +88,7 @@ public class ChatPresenter implements ChatContract.Presenter {
                     if ("-1".equals(iMessageModel.getTo())) return false;
                     if (iMessageModel.getToUser() == null) return false;
                     IUserModel currentPrivateChatUser = routerListener.getPrivateChatUser();
-                    if(currentPrivateChatUser == null) return true;
+                    if (currentPrivateChatUser == null) return true;
                     return iMessageModel.getToUser().getNumber().equals(currentPrivateChatUser.getNumber())
                             || iMessageModel.getFrom().getNumber().equals(currentPrivateChatUser.getName());
                 })
@@ -97,12 +100,19 @@ public class ChatPresenter implements ChatContract.Presenter {
                     }
                     view.notifyItemInserted(getCount() - 1);
                 });
+        subscribeOfTranslateMessage = routerListener.getLiveRoom().getChatVM().getObservableOfReceiveTranslateMessage()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(translateModel -> {
+                    translateMessageModels.put(translateModel.messageId, translateModel);
+                    view.notifyItemTranslateMessage();
+                });
     }
 
     @Override
     public void unSubscribe() {
         RxUtils.dispose(subscriptionOfDataChange);
         RxUtils.dispose(subscriptionOfMessageReceived);
+        RxUtils.dispose(subscribeOfTranslateMessage);
     }
 
     @Override
@@ -134,6 +144,29 @@ public class ChatPresenter implements ChatContract.Presenter {
                 return (IMessageModel) imageMessageUploadingQueue.toArray()[position - messageCount];
             }
         }
+    }
+
+    @Override
+    public String getTranslateResult(int position) {
+        IMessageModel iMessageModel = getMessage(position);
+        LPMessageTranslateModel lpMessageTranslateModel = translateMessageModels.get(iMessageModel.getFrom().getUserId() + iMessageModel.getTime().getTime());
+        String result;
+        if (lpMessageTranslateModel != null) {
+            if (lpMessageTranslateModel.code == 0) {
+                result = lpMessageTranslateModel.result;
+            } else {
+                result = Locale.getDefault().getCountry().equalsIgnoreCase("cn") ? "翻译失败" : "Translate Fail!";
+            }
+        } else {
+            result = "";
+        }
+        return result;
+    }
+
+    @Override
+    public void translateMessage(String message, String messageId, String fromLanguage, String toLanguage) {
+        routerListener.getLiveRoom().getChatVM().sendTranslateMessage(message, messageId
+                , String.valueOf(routerListener.getLiveRoom().getRoomId()), routerListener.getLiveRoom().getCurrentUser().getUserId(), fromLanguage, toLanguage);
     }
 
     @Override
@@ -175,7 +208,7 @@ public class ChatPresenter implements ChatContract.Presenter {
     }
 
     @Override
-    public void changeNewMessageReminder(boolean isNeededShow){
+    public void changeNewMessageReminder(boolean isNeededShow) {
         if (isNeededShow && receivedNewMessageNumber > 0)
             routerListener.changeNewChatMessageReminder(true, receivedNewMessageNumber);
         else {
@@ -187,6 +220,11 @@ public class ChatPresenter implements ChatContract.Presenter {
     @Override
     public boolean needScrollToBottom() {
         return receivedNewMessageNumber > 0;
+    }
+
+    @Override
+    public boolean isEnableTranslate() {
+        return routerListener.getLiveRoom().getPartnerConfig().isEnableChatTranslation();
     }
 
     public void onPrivateChatUserChange() {

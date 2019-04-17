@@ -218,4 +218,8 @@ public interface LiveRoomRouterListener {
     void answerEnd(boolean ended);
 
     void showAwardAnimation(String userName);
+
+    void showQuestionAnswer(boolean showFragment);
+
+    boolean isQuestionAnswerShow();
 }

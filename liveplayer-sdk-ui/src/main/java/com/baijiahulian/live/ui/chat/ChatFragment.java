@@ -18,6 +18,7 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.util.Linkify;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ import android.widget.TextView;
 
 import com.baijiahulian.live.ui.R;
 import com.baijiahulian.live.ui.base.BaseFragment;
+import com.baijiahulian.live.ui.chat.widget.ChatMessageView;
 import com.baijiahulian.live.ui.utils.AliCloudImageUtil;
 import com.baijiahulian.live.ui.utils.ChatImageUtil;
 import com.baijiahulian.live.ui.utils.DisplayUtils;
@@ -39,6 +41,7 @@ import com.squareup.picasso.Target;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.regex.Pattern;
 
 /**
  * Created by Shubo on 2017/2/23.
@@ -82,6 +85,7 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
         recyclerView = (RecyclerView) $.id(R.id.fragment_chat_recycler).view();
+        recyclerView.getRecycledViewPool().setMaxRecycledViews(0, 0);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setAdapter(adapter);
 
@@ -100,9 +104,9 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
             @Override
             public void run() {
                 boolean isNeedScroll = false;
-                if (needRemindNewMessageArrived()){
+                if (needRemindNewMessageArrived()) {
                     presenter.changeNewMessageReminder(true);
-                }else
+                } else
                     isNeedScroll = true;
                 adapter.notifyDataSetChanged();
                 if (isNeedScroll)
@@ -112,7 +116,7 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
     }
 
 
-    private boolean needRemindNewMessageArrived(){
+    private boolean needRemindNewMessageArrived() {
         return currentPosition < presenter.getCount() - 2 && presenter.needScrollToBottom();
     }
 
@@ -128,18 +132,23 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
     }
 
     @Override
+    public void notifyItemTranslateMessage() {
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
     public void showHavingPrivateChat(IUserModel privateChatUser) {
         if (!presenter.isLiveCanWhisper()) return;
         $.id(R.id.fragment_chat_private_status_container).visible();
         $.id(R.id.fragment_chat_private_user).text(getString(R.string.live_room_private_chat_with_name, privateChatUser.getName()));
     }
 
-    public void scrollToBottom(){
+    public void scrollToBottom() {
         if (recyclerView != null)
-        recyclerView.smoothScrollToPosition(adapter.getItemCount());
+            recyclerView.smoothScrollToPosition(adapter.getItemCount());
     }
 
-    private void hideNewMessageReminder(){
+    private void hideNewMessageReminder() {
         presenter.changeNewMessageReminder(false);
     }
 
@@ -301,15 +310,32 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
 
             if (holder instanceof TextViewHolder) {
                 TextViewHolder textViewHolder = (TextViewHolder) holder;
-                textViewHolder.textView.setText(spanText);
-                textViewHolder.textView.setMovementMethod(LinkMovementMethod.getInstance());
-                textViewHolder.textView.setTextColor(textColor);
-                textViewHolder.textView.append(message.getContent());
+                textViewHolder.chatMessageView.getTextViewChat().setText(spanText);
+                textViewHolder.chatMessageView.getTextViewChat().setMovementMethod(LinkMovementMethod.getInstance());
+                textViewHolder.chatMessageView.getTextViewChat().setTextColor(textColor);
+                textViewHolder.chatMessageView.getTextViewChat().append(message.getContent());
+                textViewHolder.chatMessageView.enableTranslation(presenter.isEnableTranslate());
+                textViewHolder.chatMessageView.setMessage(message.getContent());
+                textViewHolder.chatMessageView.addTranslateMessage(presenter.getTranslateResult(position));
+                Log.d("ChatMessageView", "onBindViewHolder: message id=" + message.getId() + "........message content=" + message.getContent() + ".....result=" + presenter.getTranslateResult(position));
+                textViewHolder.chatMessageView.setOnProgressListener(() -> {
+                    //判断是否有中文，有就翻译成英文，没有就翻译成中文
+                    String fromLanguage, toLanguage;
+                    Pattern pattern = Pattern.compile("[\\u4E00-\\u9FBF]+");
+                    if (pattern.matcher(message.getContent()).find()) {
+                        fromLanguage = "zh";
+                        toLanguage = "en";
+                    } else {
+                        fromLanguage = "en";
+                        toLanguage = "zh";
+                    }
+                    presenter.translateMessage(message.getContent(), message.getFrom().getUserId() + message.getTime().getTime(), fromLanguage, toLanguage);
+                });
                 if (message.getFrom().getType() == LPConstants.LPUserType.Teacher ||
                         message.getFrom().getType() == LPConstants.LPUserType.Assistant) {
-                    Linkify.addLinks(textViewHolder.textView, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
+                    Linkify.addLinks(textViewHolder.chatMessageView.getTextViewChat(), Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
                 } else {
-                    textViewHolder.textView.setAutoLinkMask(0);
+                    textViewHolder.chatMessageView.getTextViewChat().setAutoLinkMask(0);
                 }
             } else if (holder instanceof EmojiViewHolder) {
                 EmojiViewHolder emojiViewHolder = (EmojiViewHolder) holder;
@@ -380,11 +406,13 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
 
     private static class TextViewHolder extends RecyclerView.ViewHolder {
 
-        TextView textView;
+        //        TextView textView;
+        ChatMessageView chatMessageView;
 
         TextViewHolder(View itemView) {
             super(itemView);
-            textView = (TextView) itemView.findViewById(R.id.item_chat_text);
+//            textView = (TextView) itemView.findViewById(R.id.item_chat_text);
+            chatMessageView = (ChatMessageView) itemView.findViewById(R.id.item_chat_view);
         }
     }
 
@@ -438,7 +466,7 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
         }
 
         @Override
-        public void onBitmapFailed( Drawable errorDrawable) {
+        public void onBitmapFailed(Drawable errorDrawable) {
             imageView.setImageDrawable(errorDrawable);
         }
 
@@ -449,9 +477,9 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
-        if (recyclerView != null){
+        if (recyclerView != null) {
             recyclerView.setAdapter(null);
             recyclerView = null;
         }

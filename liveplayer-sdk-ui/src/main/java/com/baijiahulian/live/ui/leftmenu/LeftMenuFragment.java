@@ -3,9 +3,11 @@ package com.baijiahulian.live.ui.leftmenu;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.baijiahulian.live.ui.R;
 import com.baijiahulian.live.ui.base.BaseFragment;
+import com.baijiayun.livecore.context.LPConstants;
 
 /**
  * Created by Shubo on 2017/2/15.
@@ -23,22 +25,24 @@ public class LeftMenuFragment extends BaseFragment implements LeftMenuContract.V
     @Override
     protected void init(Bundle savedInstanceState) {
         super.init(savedInstanceState);
-        $.id(R.id.fragment_left_menu_clear_screen).clicked(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                presenter.clearScreen();
+        $.id(R.id.fragment_left_menu_clear_screen).clicked(v -> presenter.clearScreen());
+        $.id(R.id.fragment_left_menu_send_message).clicked(v -> {
+            if (presenter.isAllForbidden() || presenter.isForbiddenByTeacher()) {
+                showToast(getString(R.string.live_forbid_send_message));
+                return;
             }
+            presenter.showMessageInput();
         });
-        $.id(R.id.fragment_left_menu_send_message).clicked(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (presenter.isAllForbidden() || presenter.isForbiddenByTeacher()) {
-                    showToast(getString(R.string.live_forbid_send_message));
-                    return;
-                }
-                presenter.showMessageInput();
-            }
-        });
+
+        if (presenter.isEnableLiveQuestionAnswer() && presenter.getCurrentUser().getType() == LPConstants.LPUserType.Student) {
+            $.id(R.id.fragment_left_menu_question_answer).view().setVisibility(View.VISIBLE);
+            $.id(R.id.fragment_left_menu_question_answer).clicked(v -> {
+                presenter.showQuestionAnswer();
+                showQuestionAnswerInfo(false);
+            });
+        }
+
+
 //        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
 //            $.id(R.id.fragment_left_menu_clear_screen).gone();
 //        } else {
@@ -76,6 +80,14 @@ public class LeftMenuFragment extends BaseFragment implements LeftMenuContract.V
                 presenter.showCopyLogDebugPanel();
             }
         });
+    }
+
+    @Override
+    public void showQuestionAnswerInfo(boolean showRed) {
+        if (showRed)
+            ((ImageView) $.id(R.id.fragment_left_menu_question_answer).view()).setImageResource(R.drawable.live_ic_question_answer);
+        else
+            ((ImageView) $.id(R.id.fragment_left_menu_question_answer).view()).setImageResource(R.drawable.live_ic_question_answer_normal);
     }
 
     @Override

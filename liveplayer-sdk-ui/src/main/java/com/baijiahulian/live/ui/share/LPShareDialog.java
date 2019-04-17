@@ -15,7 +15,7 @@ import android.widget.TextView;
 import com.baijiahulian.common.utils.DisplayUtils;
 import com.baijiahulian.live.ui.R;
 import com.baijiahulian.live.ui.base.BaseDialogFragment;
-import com.baijiahulian.live.ui.utils.LPRecyclerItemClickSupport;
+import com.baijiayun.livecore.utils.LPRecyclerItemClickSupport;
 import com.baijiahulian.live.ui.utils.LPShareModel;
 
 import java.util.ArrayList;

@@ -96,4 +96,5 @@ public abstract class BaseFragment extends Fragment {
         Log.d(TAG, "onDetach");
         super.onDetach();
     }
+
 }

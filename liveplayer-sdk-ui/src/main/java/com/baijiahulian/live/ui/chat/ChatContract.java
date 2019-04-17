@@ -22,6 +22,8 @@ interface ChatContract {
 
         void notifyItemInserted(int position);
 
+        void notifyItemTranslateMessage();
+
         void showHavingPrivateChat(IUserModel privateChatUser);
 
         void showNoPrivateChat();
@@ -31,6 +33,10 @@ interface ChatContract {
         int getCount();
 
         IMessageModel getMessage(int position);
+
+        String getTranslateResult(int position);
+
+        void translateMessage(String message, String messageId, String fromLanguage, String toLanguage);
 
         void showBigPic(int position);
 
@@ -50,5 +56,6 @@ interface ChatContract {
 
         boolean needScrollToBottom();
 
+        boolean isEnableTranslate();
     }
 }

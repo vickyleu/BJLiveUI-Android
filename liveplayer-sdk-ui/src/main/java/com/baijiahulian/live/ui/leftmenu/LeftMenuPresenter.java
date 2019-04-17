@@ -1,7 +1,11 @@
 package com.baijiahulian.live.ui.leftmenu;
 
 import com.baijiahulian.live.ui.activity.LiveRoomRouterListener;
+import com.baijiayun.livecore.models.LPQuestionPullResItem;
+import com.baijiayun.livecore.models.imodels.IUserModel;
 import com.baijiayun.livecore.utils.LPRxUtils;
+
+import java.util.List;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -18,7 +22,7 @@ public class LeftMenuPresenter implements LeftMenuContract.Presenter {
     private LeftMenuContract.View view;
     private boolean isScreenCleared = false;
     private boolean isSelfForbidden = false;
-    private Disposable disposableOfIsSelfChatForbid;
+    private Disposable disposableOfIsSelfChatForbid, disposableOfQuestionQueue;
 
     public LeftMenuPresenter(LeftMenuContract.View view) {
         this.view = view;
@@ -71,6 +75,21 @@ public class LeftMenuPresenter implements LeftMenuContract.Presenter {
     }
 
     @Override
+    public boolean isEnableLiveQuestionAnswer() {
+        return routerListener.getLiveRoom().getPartnerConfig().enableLiveQuestionAnswer == 1;
+    }
+
+    @Override
+    public void showQuestionAnswer() {
+        routerListener.showQuestionAnswer(true);
+    }
+
+    @Override
+    public IUserModel getCurrentUser() {
+        return routerListener.getLiveRoom().getCurrentUser();
+    }
+
+    @Override
     public void setRouter(LiveRoomRouterListener liveRoomRouterListener) {
         routerListener = liveRoomRouterListener;
     }
@@ -79,13 +98,14 @@ public class LeftMenuPresenter implements LeftMenuContract.Presenter {
     public void subscribe() {
         disposableOfIsSelfChatForbid = routerListener.getLiveRoom().getObservableOfIsSelfChatForbid()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<Boolean>() {
-                    @Override
-                    public void accept(Boolean aBoolean) {
-                        isSelfForbidden = aBoolean;
+                .subscribe(aBoolean -> isSelfForbidden = aBoolean);
+
+        disposableOfQuestionQueue = routerListener.getLiveRoom().getObservableOfQuestionQueue()
+                .subscribe(lpQuestionPullResItems -> {
+                    if (!lpQuestionPullResItems.isEmpty() && !routerListener.isQuestionAnswerShow()) {
+                        view.showQuestionAnswerInfo(true);
                     }
                 });
-
     }
 
     @Override
@@ -96,6 +116,7 @@ public class LeftMenuPresenter implements LeftMenuContract.Presenter {
     @Override
     public void destroy() {
         LPRxUtils.dispose(disposableOfIsSelfChatForbid);
+        LPRxUtils.dispose(disposableOfQuestionQueue);
         routerListener = null;
         view = null;
     }

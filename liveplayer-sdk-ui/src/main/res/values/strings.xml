@@ -161,5 +161,8 @@
     <string name="live_room_ppt_switch">是否切换到静态PPT?</string>
     <string name="live_award">奖励</string>
     <string name="live_room_not_support_beautify">您正在使用WebRTC, 暂不支持美颜功能</string>
+    <string name="live_room_speak_apply_res_result">发言人数已满，请先关闭其他人音视频。</string>
+    <string name="live_room_question_answer_text">问答</string>
+    <string name="live_room_network_reminder">当前网络状况差</string>
 </resources>
 

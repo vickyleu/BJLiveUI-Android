@@ -25,8 +25,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.baijiahulian.live.ui.R;
-import com.baijiahulian.live.ui.utils.DisplayUtils;
 import com.baijiahulian.live.ui.utils.QueryPlus;
+import com.baijiayun.livecore.utils.DisplayUtils;
 
 import static com.baijiahulian.live.ui.R.id.dialog_base_title_container;
 import static com.baijiahulian.live.ui.utils.Precondition.checkNotNull;
@@ -64,12 +64,12 @@ public abstract class BaseDialogFragment extends DialogFragment {
         dialog.setCanceledOnTouchOutside(true);
         dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
-        dialog.getWindow().getDecorView().setSystemUiVisibility(getActivity().getWindow().getDecorView().getSystemUiVisibility());
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else {
             dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         }
+        dialog.getWindow().getDecorView().setSystemUiVisibility(getActivity().getWindow().getDecorView().getSystemUiVisibility());
         // 处理dialog沉浸式状态栏
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
@@ -152,17 +152,17 @@ public abstract class BaseDialogFragment extends DialogFragment {
         return this;
     }
 
-    public void setTitleTextColor(int color){
-        ((TextView)$.id(R.id.dialog_base_title).view()).setTextColor(getResources().getColor(color));
+    public void setTitleTextColor(int color) {
+        ((TextView) $.id(R.id.dialog_base_title).view()).setTextColor(getResources().getColor(color));
     }
 
-    public void setTitleHeight(int height){
+    public void setTitleHeight(int height) {
         ViewGroup.LayoutParams layoutParams = ($.id(R.id.dialog_base_title_container).view()).getLayoutParams();
         layoutParams.height = height;
         ($.id(R.id.dialog_base_title_container).view()).setLayoutParams(layoutParams);
     }
 
-    public void showCross(){
+    public void showCross() {
         $.id(R.id.dialog_base_edit).visibility(View.GONE);
         $.id(R.id.dialog_cross).visibility(View.VISIBLE);
         $.id(R.id.dialog_cross).clicked(new View.OnClickListener() {
@@ -173,7 +173,7 @@ public abstract class BaseDialogFragment extends DialogFragment {
         });
     }
 
-    public void setTitleBarColor(int color){
+    public void setTitleBarColor(int color) {
         $.id(dialog_base_title_container).view().setBackgroundColor(getResources().getColor(color));
     }
 
@@ -253,7 +253,7 @@ public abstract class BaseDialogFragment extends DialogFragment {
         $ = null;
     }
 
-    public boolean isQueryPlusNull(){
+    public boolean isQueryPlusNull() {
         return $ == null;
     }
 }

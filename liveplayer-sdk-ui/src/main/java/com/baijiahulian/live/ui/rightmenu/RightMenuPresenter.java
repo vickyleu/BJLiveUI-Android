@@ -28,7 +28,7 @@ public class RightMenuPresenter implements RightMenuContract.Presenter {
     private RightMenuContract.View view;
     private LPConstants.LPUserType currentUserType;
     private Disposable subscriptionOfMediaControl, subscriptionOfMediaPublishDeny, subscriptionOfSpeakApplyDeny, subscriptionOfClassEnd, subscriptionOfSpeakApplyResponse,
-            subscriptionOfSpeakInvite, subscriptionOfClassStart, subscriptionOfStudentDrawingAuth;
+            subscriptionOfSpeakInvite, subscriptionOfClassStart, subscriptionOfStudentDrawingAuth, subscriptionOfSpeakApplyResResult;
     private int speakApplyStatus = RightMenuContract.STUDENT_SPEAK_APPLY_NONE;
     private boolean isDrawing = false;
     private boolean isGetDrawingAuth = false;
@@ -83,13 +83,6 @@ public class RightMenuPresenter implements RightMenuContract.Presenter {
         if (speakApplyStatus == RightMenuContract.STUDENT_SPEAK_APPLY_NONE) {
             if (liveRoomRouterListener.getLiveRoom().getForbidRaiseHandStatus()) {
                 view.showHandUpForbid();
-                return;
-            }
-
-            if (liveRoomRouterListener.getLiveRoom().getSpeakQueueVM().isSpeakersFull()) {
-                speakApplyStatus = RightMenuContract.STUDENT_SPEAK_APPLY_NONE;
-                liveRoomRouterListener.getLiveRoom().getSpeakQueueVM().cancelSpeakApply();
-                view.showSpeakClosedByServer();
                 return;
             }
 
@@ -186,6 +179,15 @@ public class RightMenuPresenter implements RightMenuContract.Presenter {
             if (liveRoomRouterListener.getLiveRoom().getGroupId() != 0) {
                 view.hideSpeakApply();
             }
+        }
+
+        if (liveRoomRouterListener.isTeacherOrAssistant()) {
+            subscriptionOfSpeakApplyResResult = liveRoomRouterListener.getLiveRoom().getSpeakQueueVM().getObservableOfSpeakApplyResResult()
+                    .subscribe(iMediaControlModel -> {
+                        if (!iMediaControlModel.isApplyAgreed()) {
+                            liveRoomRouterListener.showMessage("发言人数已满，请先关闭其他人音视频。");
+                        }
+                    });
         }
 
         if (!liveRoomRouterListener.isTeacherOrAssistant()) {
@@ -451,6 +453,7 @@ public class RightMenuPresenter implements RightMenuContract.Presenter {
         RxUtils.dispose(subscriptionOfSpeakApplyDeny);
         RxUtils.dispose(subscriptionOfMediaPublishDeny);
         RxUtils.dispose(subscriptionOfStudentDrawingAuth);
+        RxUtils.dispose(subscriptionOfSpeakApplyResResult);
         timerList.clear();
     }
 

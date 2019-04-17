@@ -54,49 +54,35 @@ public class GlobalPresenter implements BasePresenter {
     public void subscribe() {
         subscriptionOfClassStart = routerListener.getLiveRoom().getObservableOfClassStart()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<Integer>() {
-                    @Override
-                    public void accept(Integer integer) {
-                        routerListener.showMessageClassStart();
-                        routerListener.enableStudentSpeakMode();
-                    }
+                .subscribe(integer -> {
+                    routerListener.showMessageClassStart();
+                    routerListener.enableStudentSpeakMode();
                 });
         subscriptionOfClassEnd = routerListener.getLiveRoom().getObservableOfClassEnd()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<Integer>() {
-                    @Override
-                    public void accept(Integer aVoid) {
-                        routerListener.showMessageClassEnd();
-                        teacherVideoOn = false;
-                        teacherAudioOn = false;
-                    }
+                .subscribe(aVoid -> {
+                    routerListener.showMessageClassEnd();
+                    teacherVideoOn = false;
+                    teacherAudioOn = false;
                 });
 
         // 大小班教室切换
         subscriptionOfClassSwitch = routerListener.getLiveRoom().getObservableOfClassSwitch()
                 .delay(new Random().nextInt(2) + 1, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<Integer>() {
-                    @Override
-                    public void accept(Integer aVoid) {
-                        routerListener.showClassSwitch();
-                    }
-                });
+                .subscribe(aVoid -> routerListener.showClassSwitch());
 
         subscriptionOfForbidAllStatus = routerListener.getLiveRoom().getObservableOfForbidAllChatStatus()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<Boolean>() {
-                    @Override
-                    public void accept(Boolean aBoolean) {
-                        if (counter == 0) {
-                            isForbidChatChanged = aBoolean;
-                            counter++;
-                            return;
-                        }
-                        if (isForbidChatChanged == aBoolean) return;
+                .subscribe(aBoolean -> {
+                    if (counter == 0) {
                         isForbidChatChanged = aBoolean;
-                        routerListener.showMessageForbidAllChat(aBoolean);
+                        counter++;
+                        return;
                     }
+                    if (isForbidChatChanged == aBoolean) return;
+                    isForbidChatChanged = aBoolean;
+                    routerListener.showMessageForbidAllChat(aBoolean);
                 });
 
         if (!routerListener.isCurrentUserTeacher()) {
@@ -111,54 +97,45 @@ public class GlobalPresenter implements BasePresenter {
                     })
                     .throttleLast(500, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Consumer<IMediaModel>() {
-                        @Override
-                        public void accept(IMediaModel iMediaModel) {
-                            if (!routerListener.getLiveRoom().isClassStarted()) {
-                                return;
-                            }
-                            if (iMediaModel.isVideoOn() && iMediaModel.isAudioOn()) {
-                                if (!teacherVideoOn || !teacherAudioOn) {
-                                    routerListener.showMessageTeacherOpenAV();
-                                }
-                            } else if (iMediaModel.isVideoOn()) {
-                                if (teacherAudioOn && teacherVideoOn) {
-                                    routerListener.showMessageTeacherCloseAudio();
-                                } else if (!teacherVideoOn) {
-                                    routerListener.showMessageTeacherOpenVideo();
-                                }
-                            } else if (iMediaModel.isAudioOn()) {
-                                if (teacherAudioOn && teacherVideoOn) {
-                                    routerListener.showMessageTeacherCloseVideo();
-                                } else if (!teacherAudioOn) {
-                                    routerListener.showMessageTeacherOpenAudio();
-                                }
-                            } else {
-                                routerListener.showMessageTeacherCloseAV();
-                            }
-                            setTeacherMedia(iMediaModel);
+                    .subscribe(iMediaModel -> {
+                        if (!routerListener.getLiveRoom().isClassStarted()) {
+                            return;
                         }
+                        if (iMediaModel.isVideoOn() && iMediaModel.isAudioOn()) {
+                            if (!teacherVideoOn || !teacherAudioOn) {
+                                routerListener.showMessageTeacherOpenAV();
+                            }
+                        } else if (iMediaModel.isVideoOn()) {
+                            if (teacherAudioOn && teacherVideoOn) {
+                                routerListener.showMessageTeacherCloseAudio();
+                            } else if (!teacherVideoOn) {
+                                routerListener.showMessageTeacherOpenVideo();
+                            }
+                        } else if (iMediaModel.isAudioOn()) {
+                            if (teacherAudioOn && teacherVideoOn) {
+                                routerListener.showMessageTeacherCloseVideo();
+                            } else if (!teacherAudioOn) {
+                                routerListener.showMessageTeacherOpenAudio();
+                            }
+                        } else {
+                            routerListener.showMessageTeacherCloseAV();
+                        }
+                        setTeacherMedia(iMediaModel);
                     });
 
              subscriptionOfUserIn = routerListener.getLiveRoom().getObservableOfUserIn().observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Consumer<IUserInModel>() {
-                        @Override
-                        public void accept(IUserInModel iUserInModel) {
-                            if (iUserInModel.getUser().getType() == LPConstants.LPUserType.Teacher) {
-                                routerListener.showMessageTeacherEnterRoom();
-                            }
+                    .subscribe(iUserInModel -> {
+                        if (iUserInModel.getUser().getType() == LPConstants.LPUserType.Teacher) {
+                            routerListener.showMessageTeacherEnterRoom();
                         }
                     });
 
              subscriptionOfUserOut = routerListener.getLiveRoom().getObservableOfUserOut().observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Consumer<String>() {
-                        @Override
-                        public void accept(String s) {
-                            if (TextUtils.isEmpty(s)) return;
-                            if (routerListener.getLiveRoom().getTeacherUser() == null) return;
-                            if (s.equals(routerListener.getLiveRoom().getTeacherUser().getUserId())) {
-                                routerListener.showMessageTeacherExitRoom();
-                            }
+                    .subscribe(s -> {
+                        if (TextUtils.isEmpty(s)) return;
+                        if (routerListener.getLiveRoom().getTeacherUser() == null) return;
+                        if (s.equals(routerListener.getLiveRoom().getTeacherUser().getUserId())) {
+                            routerListener.showMessageTeacherExitRoom();
                         }
                     });
             //点名
@@ -177,42 +154,36 @@ public class GlobalPresenter implements BasePresenter {
             //开始小测
             subscriptionOfQuizStart = routerListener.getLiveRoom().getQuizVM().getObservableOfQuizStart()
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Consumer<LPJsonModel>() {
-                        @Override
-                        public void accept(LPJsonModel jsonModel) {
-                            if (!routerListener.isTeacherOrAssistant()) {
-                                routerListener.onQuizStartArrived(jsonModel);
-                            }
+                    .subscribe(jsonModel -> {
+                        if (!routerListener.isTeacherOrAssistant()) {
+                            routerListener.onQuizStartArrived(jsonModel);
                         }
                     });
             //中途打开
             subscriptionOfQuizRes = routerListener.getLiveRoom().getQuizVM().getObservableOfQuizRes()
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Consumer<LPJsonModel>() {
-                        @Override
-                        public void accept(LPJsonModel jsonModel) {
-                            if (!routerListener.isTeacherOrAssistant()) {
-                                if (jsonModel != null && jsonModel.data != null) {
-                                    String quizId = JsonObjectUtil.getAsString(jsonModel.data, "quiz_id");
-                                    boolean solutionStatus = false;
-                                    if (!jsonModel.data.has("solution")) {
-                                        //没有solution
-                                        solutionStatus = true;
-                                    } else if (jsonModel.data.getAsJsonObject("solution").entrySet().isEmpty()) {
-                                        //"solution":{}
-                                        solutionStatus = true;
-                                    } else if (jsonModel.data.getAsJsonObject("solution").isJsonNull()) {
-                                        //"solution":"null"
-                                        solutionStatus = true;
-                                    }
-                                    boolean endFlag = jsonModel.data.get("end_flag").getAsInt() == 1;
-                                    //quizid非空、solution是空、没有结束答题 才弹窗
-                                    if (!TextUtils.isEmpty(quizId) && solutionStatus && !endFlag) {
-                                        routerListener.onQuizRes(jsonModel);
-                                    }
+                    .subscribe(jsonModel -> {
+                        if (!routerListener.isTeacherOrAssistant()) {
+                            if (jsonModel != null && jsonModel.data != null) {
+                                String quizId = JsonObjectUtil.getAsString(jsonModel.data, "quiz_id");
+                                boolean solutionStatus = false;
+                                if (!jsonModel.data.has("solution")) {
+                                    //没有solution
+                                    solutionStatus = true;
+                                } else if (jsonModel.data.getAsJsonObject("solution").entrySet().isEmpty()) {
+                                    //"solution":{}
+                                    solutionStatus = true;
+                                } else if (jsonModel.data.getAsJsonObject("solution").isJsonNull()) {
+                                    //"solution":"null"
+                                    solutionStatus = true;
                                 }
-
+                                boolean endFlag = jsonModel.data.get("end_flag").getAsInt() == 1;
+                                //quizid非空、solution是空、没有结束答题 才弹窗
+                                if (!TextUtils.isEmpty(quizId) && solutionStatus && !endFlag) {
+                                    routerListener.onQuizRes(jsonModel);
+                                }
                             }
+
                         }
                     });
             //结束，只转发h5
@@ -230,52 +201,40 @@ public class GlobalPresenter implements BasePresenter {
             //发答案啦
             subscriptionOfQuizSolution = routerListener.getLiveRoom().getQuizVM().getObservableOfQuizSolution()
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Consumer<LPJsonModel>() {
-                        @Override
-                        public void accept(LPJsonModel jsonModel) {
-                            if (!routerListener.isTeacherOrAssistant()) {
-                                routerListener.onQuizSolutionArrived(jsonModel);
-                            }
+                    .subscribe(jsonModel -> {
+                        if (!routerListener.isTeacherOrAssistant()) {
+                            routerListener.onQuizSolutionArrived(jsonModel);
                         }
                     });
             //debug信息
             subscriptionOfDebug = routerListener.getLiveRoom().getObservableOfDebug()
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Consumer<LPResRoomDebugModel>() {
-                        @Override
-                        public void accept(LPResRoomDebugModel lpResRoomDebugModel) {
-                            if (lpResRoomDebugModel != null && lpResRoomDebugModel.data != null) {
-                                String commandType = "";
-                                if (JsonObjectUtil.isJsonNull(lpResRoomDebugModel.data, "command_type")) {
-                                    return;
-                                }
-                                commandType = lpResRoomDebugModel.data.get("command_type").getAsString();
-                                if ("logout".equals(commandType)) {
-                                    routerListener.showError(LPError.getNewError(LPError.CODE_ERROR_LOGIN_KICK_OUT, "您已被踢出房间"));
-                                }
+                    .subscribe(lpResRoomDebugModel -> {
+                        if (lpResRoomDebugModel != null && lpResRoomDebugModel.data != null) {
+                            String commandType = "";
+                            if (JsonObjectUtil.isJsonNull(lpResRoomDebugModel.data, "command_type")) {
+                                return;
+                            }
+                            commandType = lpResRoomDebugModel.data.get("command_type").getAsString();
+                            if ("logout".equals(commandType)) {
+                                routerListener.showError(LPError.getNewError(LPError.CODE_ERROR_LOGIN_KICK_OUT, "您已被踢出房间"));
                             }
                         }
                     });
 
             subscriptionOfAnswerStart = routerListener.getLiveRoom().getObservableOfAnswerSheetStart()
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Consumer<LPAnswerSheetModel>() {
-                        @Override
-                        public void accept(LPAnswerSheetModel lpAnswerSheetModel) {
-                            if (!routerListener.isTeacherOrAssistant())
-                                routerListener.answerStart(lpAnswerSheetModel);
+                    .subscribe(lpAnswerSheetModel -> {
+                        if (!routerListener.isTeacherOrAssistant())
+                            routerListener.answerStart(lpAnswerSheetModel);
 
-                        }
                     });
 
             subscriptionOfAnswerEnd = routerListener.getLiveRoom().getObservableOfAnswerSheetEnd()
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Consumer<Boolean>() {
-                        @Override
-                        public void accept(Boolean aBoolean) {
-                            if (!routerListener.isTeacherOrAssistant())
-                                routerListener.answerEnd(aBoolean);
-                        }
+                    .subscribe(aBoolean -> {
+                        if (!routerListener.isTeacherOrAssistant())
+                            routerListener.answerEnd(aBoolean);
                     });
         }
         if (!routerListener.isTeacherOrAssistant()) {
@@ -289,13 +248,10 @@ public class GlobalPresenter implements BasePresenter {
         if (routerListener.isCurrentUserTeacher()) return;
          subscriptionOfAnnouncement = routerListener.getLiveRoom().getObservableOfAnnouncementChange()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<IAnnouncementModel>() {
-                    @Override
-                    public void accept(IAnnouncementModel iAnnouncementModel) {
-                        if (!TextUtils.isEmpty(iAnnouncementModel.getLink()) ||
-                                !TextUtils.isEmpty(iAnnouncementModel.getContent())) {
-                            routerListener.navigateToAnnouncement();
-                        }
+                .subscribe(iAnnouncementModel -> {
+                    if (!TextUtils.isEmpty(iAnnouncementModel.getLink()) ||
+                            !TextUtils.isEmpty(iAnnouncementModel.getContent())) {
+                        routerListener.navigateToAnnouncement();
                     }
                 });
     }

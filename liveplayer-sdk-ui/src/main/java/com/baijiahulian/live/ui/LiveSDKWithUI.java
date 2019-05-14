@@ -163,24 +163,12 @@ public class LiveSDKWithUI {
         String userAvatar;
         String userNumber;
         LPConstants.LPUserType userType;
-        int groupID = -1;
 
-        public LiveRoomUserModel(@NonNull String userName, @Nullable String userAvatar,
-                                 @Nullable String userNumber, @NonNull LPConstants.LPUserType userType) {
+        public LiveRoomUserModel(@NonNull String userName, @Nullable String userAvatar, @Nullable String userNumber, @NonNull LPConstants.LPUserType userType) {
             this.userName = userName;
             this.userAvatar = userAvatar;
             this.userNumber = userNumber;
             this.userType = userType;
-        }
-
-        public LiveRoomUserModel(@NonNull String userName, @Nullable String userAvatar,
-                                 @Nullable String userNumber, @NonNull LPConstants.LPUserType userType,
-                                 int groupID) {
-            this.userName = userName;
-            this.userAvatar = userAvatar;
-            this.userNumber = userNumber;
-            this.userType = userType;
-            this.groupID = groupID;
         }
 
         @Override
@@ -210,7 +198,7 @@ public class LiveSDKWithUI {
 
         @Override
         public int getGroup() {
-            return groupID;
+            return 0;
         }
 
         @Override

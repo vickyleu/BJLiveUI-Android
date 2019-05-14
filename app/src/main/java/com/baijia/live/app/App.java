@@ -29,8 +29,7 @@ public class App extends MultiDexApplication {
         CrashReport.UserStrategy strategy = new CrashReport.UserStrategy(context);
         strategy.setUploadProcess(processName == null || processName.equals(packageName));
         CrashReport.initCrashReport(getApplicationContext(), "ce7b872000", true);
-
-//        LiveSDK.deployType = LPConstants.LPDeployType.Test;
+//        LiveSDK.customEnvironmentPrefix = "wangrongchen";
     }
 
     private static String getProcessName(int pid) {

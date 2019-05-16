@@ -4,15 +4,16 @@ import com.baijiahulian.live.ui.activity.LiveRoomRouterListener;
 import com.baijiahulian.live.ui.rightmenu.RightMenuContract;
 import com.baijiahulian.live.ui.utils.RxUtils;
 import com.baijiayun.livecore.context.LPConstants;
+import com.baijiayun.livecore.context.LPError;
 import com.baijiayun.livecore.context.LiveRoom;
 import com.baijiayun.livecore.wrapper.LPPlayer;
 import com.baijiayun.livecore.wrapper.LPRecorder;
 
+import java.util.ArrayList;
+
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
-import java.util.ArrayList;
-
 
 import static com.baijiahulian.live.ui.utils.Precondition.checkNotNull;
 
@@ -79,10 +80,13 @@ public class SettingPresenter implements SettingContract.Presenter {
             view.showBeautyFilterDisable();
 
         if (recorder.getVideoDefinition() == LPConstants.LPResolutionType.HIGH)
-            view.showDefinitionHigh();
+            view.showDefinitionHigh(null);
+        else if(recorder.getVideoDefinition() == LPConstants.LPResolutionType._720)
+            view.showDefinition_720(null);
+        else if(recorder.getVideoDefinition() == LPConstants.LPResolutionType._1080)
+            view.showDefinition_1080(null);
         else
-            view.showDefinitionLow();
-
+            view.showDefinitionLow(null);
         if (routerListener.getPPTShowType() == LPConstants.LPPPTShowWay.SHOW_FULL_SCREEN)
             view.showPPTFullScreen();
         else
@@ -236,10 +240,6 @@ public class SettingPresenter implements SettingContract.Presenter {
         switch (routerListener.getLiveRoom().getCurrentUser().getType()) {
             case Teacher:
             case Assistant:
-                if (routerListener.getLiveRoom().getGroupId() != 0) {
-                    view.showSmallGroupFail();
-                    return;
-                }
                 if (!recorder.isPublishing()) {
                     recorder.publish();
                 }
@@ -275,10 +275,6 @@ public class SettingPresenter implements SettingContract.Presenter {
         switch (routerListener.getLiveRoom().getCurrentUser().getType()) {
             case Teacher:
             case Assistant:
-                if (routerListener.getLiveRoom().getGroupId() != 0) {
-                    view.showSmallGroupFail();
-                    return;
-                }
                 if (!recorder.isPublishing()) {
                     recorder.publish();
                 }
@@ -345,16 +341,48 @@ public class SettingPresenter implements SettingContract.Presenter {
         view.showPPTOverspread();
     }
 
+    private void switchDefinition(LPError lpError, LPConstants.LPResolutionType resolutionType) {
+        switch (resolutionType) {
+            case LOW:
+                view.showDefinitionLow(lpError);
+                break;
+            case HIGH:
+                view.showDefinitionHigh(lpError);
+                break;
+            case _720:
+                view.showDefinition_720(lpError);
+                break;
+            case _1080:
+                view.showDefinition_1080(lpError);
+                break;
+            default:
+                view.showDefinitionLow(lpError);
+                break;
+        }
+    }
+
     @Override
     public void setDefinitionLow() {
-        recorder.setCaptureVideoDefinition(LPConstants.LPResolutionType.LOW);
-        view.showDefinitionLow();
+        LPError lpError = recorder.setCaptureVideoDefinition(LPConstants.LPResolutionType.LOW);
+        switchDefinition(lpError,recorder.getVideoDefinition());
     }
 
     @Override
     public void setDefinitionHigh() {
-        recorder.setCaptureVideoDefinition(LPConstants.LPResolutionType.HIGH);
-        view.showDefinitionHigh();
+        LPError lpError = recorder.setCaptureVideoDefinition(LPConstants.LPResolutionType.HIGH);
+        switchDefinition(lpError,recorder.getVideoDefinition());
+    }
+
+    @Override
+    public void setDefinition_720() {
+        LPError lpError = recorder.setCaptureVideoDefinition(LPConstants.LPResolutionType._720);
+        switchDefinition(lpError,recorder.getVideoDefinition());
+    }
+
+    @Override
+    public void setDefinition_1080() {
+        LPError lpError = recorder.setCaptureVideoDefinition(LPConstants.LPResolutionType._1080);
+        switchDefinition(lpError,recorder.getVideoDefinition());
     }
 
     @Override

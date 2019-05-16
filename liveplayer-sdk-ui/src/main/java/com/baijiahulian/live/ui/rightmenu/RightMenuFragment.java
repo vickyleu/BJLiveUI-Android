@@ -1,10 +1,18 @@
 package com.baijiahulian.live.ui.rightmenu;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
+import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.baijiahulian.live.ui.R;
+import com.baijiahulian.live.ui.activity.LiveRoomActivity;
 import com.baijiahulian.live.ui.base.BaseFragment;
 import com.baijiahulian.live.ui.utils.RxUtils;
 import com.baijiahulian.live.ui.viewsupport.CountdownCircleView;
@@ -55,8 +63,32 @@ public class RightMenuFragment extends BaseFragment implements RightMenuContract
                         return;
                     }
                     if (!presenter.isWaitingRecordOpen())
-                        presenter.speakApply();
+                        if (checkCameraPermission()) {
+                            presenter.speakApply();
+                        }
                 });
+    }
+    private static final int REQUEST_CODE_PERMISSION_CAMERA = 10;
+
+    public boolean checkCameraPermission() {
+        if (PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA)) {
+            return true;
+        } else {
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CODE_PERMISSION_CAMERA);
+        }
+        return false;
+    }
+    private void showSystemSettingDialog() {
+        if (isDetached()) return;
+        new MaterialDialog.Builder(getContext())
+                .title(getString(R.string.live_sweet_hint))
+                .content(getString(R.string.live_no_camera_permission))
+                .positiveText(getString(R.string.live_quiz_dialog_confirm))
+                .positiveColor(ContextCompat.getColor(getContext(), R.color.live_blue))
+                .onPositive((materialDialog, dialogAction) -> materialDialog.dismiss())
+                .canceledOnTouchOutside(true)
+                .build()
+                .show();
     }
 
     @Override
@@ -248,5 +280,16 @@ public class RightMenuFragment extends BaseFragment implements RightMenuContract
     public void onDestroy(){
         super.onDestroy();
         presenter = null;
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_PERMISSION_CAMERA) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                presenter.speakApply();
+            } else if (grantResults.length > 0) {
+                showSystemSettingDialog();
+            }
+        }
     }
 }

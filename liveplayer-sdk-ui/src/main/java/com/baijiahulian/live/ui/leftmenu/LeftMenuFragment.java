@@ -58,28 +58,39 @@ public class LeftMenuFragment extends BaseFragment implements LeftMenuContract.V
     }
 
     @Override
-    public void showDebugBtn() {
-        $.id(R.id.fragment_left_menu_stream).visible();
-        $.id(R.id.fragment_left_menu_stream).view().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                presenter.showStreamDebugPanel();
-            }
-        });
-        $.id(R.id.fragment_left_menu_huiyin).visible();
-        $.id(R.id.fragment_left_menu_huiyin).view().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                presenter.showHuiyinDebugPanel();
-            }
-        });
-        $.id(R.id.fragment_left_menu_copy_2_SD).visible();
-        $.id(R.id.fragment_left_menu_copy_2_SD).view().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                presenter.showCopyLogDebugPanel();
-            }
-        });
+    public void showDebugBtn(int type) {
+
+        if (type == 1) {
+            $.id(R.id.fragment_left_menu_stream).visible();
+            $.id(R.id.fragment_left_menu_stream).view().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    presenter.showStreamDebugPanel();
+                }
+            });
+        } else {
+            $.id(R.id.fragment_left_menu_stream).visible();
+            $.id(R.id.fragment_left_menu_stream).view().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    presenter.showStreamDebugPanel();
+                }
+            });
+            $.id(R.id.fragment_left_menu_huiyin).visible();
+            $.id(R.id.fragment_left_menu_huiyin).view().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    presenter.showHuiyinDebugPanel();
+                }
+            });
+            $.id(R.id.fragment_left_menu_copy_2_SD).visible();
+            $.id(R.id.fragment_left_menu_copy_2_SD).view().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    presenter.showCopyLogDebugPanel();
+                }
+            });
+        }
     }
 
     @Override

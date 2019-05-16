@@ -3,6 +3,7 @@ package com.baijiahulian.live.ui.setting;
 import com.baijiahulian.live.ui.base.BasePresenter;
 import com.baijiahulian.live.ui.base.BaseView;
 import com.baijiayun.livecore.context.LPConstants;
+import com.baijiayun.livecore.context.LPError;
 
 /**
  * Created by Shubo on 2017/3/2.
@@ -27,9 +28,13 @@ interface SettingContract {
 
         void showPPTOverspread();
 
-        void showDefinitionLow();
+        void showDefinitionLow(LPError lpError);
 
-        void showDefinitionHigh();
+        void showDefinitionHigh(LPError lpError);
+
+        void showDefinition_720(LPError lpError);
+
+        void showDefinition_1080(LPError lpError);
 
         void showUpLinkTCP();
 
@@ -94,6 +99,10 @@ interface SettingContract {
         void setDefinitionLow();
 
         void setDefinitionHigh();
+
+        void setDefinition_720();
+
+        void setDefinition_1080();
 
         void setUpLinkTCP();
 

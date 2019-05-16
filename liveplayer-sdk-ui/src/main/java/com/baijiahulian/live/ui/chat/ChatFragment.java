@@ -224,6 +224,9 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
 
         @Override
         public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
+            if(position < 0 || position >= getItemCount()){
+                return;
+            }
             currentPosition = position;
             if (position == presenter.getCount() - 1)
                 hideNewMessageReminder();

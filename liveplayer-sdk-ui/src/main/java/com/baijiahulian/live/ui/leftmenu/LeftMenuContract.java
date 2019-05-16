@@ -12,7 +12,8 @@ interface LeftMenuContract {
     interface View extends BaseView<Presenter> {
         void notifyClearScreenChanged(boolean isCleared);
 
-        void showDebugBtn();
+        //1 webrtc 2avsdk
+        void showDebugBtn(int type);
 
         void showQuestionAnswerInfo(boolean showRed);
     }

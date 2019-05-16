@@ -1,10 +1,13 @@
 package com.baijiahulian.live.ui.loading;
 
 import com.baijiahulian.live.ui.activity.LiveRoomRouterListener;
+import com.baijiayun.livecore.context.LPConstants;
 import com.baijiayun.livecore.context.LPError;
 import com.baijiayun.livecore.context.LiveRoom;
 import com.baijiayun.livecore.listener.LPLaunchListener;
 import com.baijiayun.livecore.models.imodels.IUserModel;
+import com.baijiayun.livecore.utils.LPLogger;
+import com.baijiayun.livecore.wrapper.impl.LPRTCRecorderImpl;
 
 /**
  * Created by Shubo on 2017/2/14.
@@ -56,12 +59,31 @@ public class LoadingPresenter implements LoadingContract.Presenter {
             @Override
             public void onLaunchSuccess(LiveRoom liveRoom) {
                 if (routerListener == null) return;
-                routerListener.setLiveRoom(liveRoom);
-                routerListener.navigateToMain();
+                if (liveRoom.isUseWebRTC()) {
+                    if (liveRoom.isTeacher()) {
+                        if (routerListener.checkTeacherCameraPermission(liveRoom)) {
+                            routerListener.setLiveRoom(liveRoom);
+                            routerListener.navigateToMain();
+                        }
+                    } else {
+                        LPConstants.LPRoomType roomType = liveRoom.getRoomType();
+                        if (roomType != LPConstants.LPRoomType.Multi) {
+                            if (routerListener.checkTeacherCameraPermission(liveRoom)) {
+                                routerListener.setLiveRoom(liveRoom);
+                                routerListener.navigateToMain();
+                            }
+                        } else {
+                            routerListener.setLiveRoom(liveRoom);
+                            routerListener.navigateToMain();
+                        }
+                    }
+                } else {
+                    routerListener.setLiveRoom(liveRoom);
+                    routerListener.navigateToMain();
+                }
             }
         };
     }
-
     @Override
     public void setRouter(LiveRoomRouterListener liveRoomRouterListener) {
         routerListener = liveRoomRouterListener;

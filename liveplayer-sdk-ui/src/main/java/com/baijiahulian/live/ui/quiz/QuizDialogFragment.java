@@ -221,7 +221,7 @@ public class QuizDialogFragment extends BaseDialogFragment implements QuizDialog
         }
         String params = "?userNumber=" + currentUserInfo.getNumber() + "&userName=" + currentUserInfo.getName() + "&quizId=" + quizId
                 + "&roomId=" + roomId + "&token=" + roomToken + "&argType=" + argsType + "&userGroup=" + currentUserInfo.getGroup();
-        String host = LPConstants.HOSTS_WEB[LiveSDK.getDeployType().getType()];
+        String host = LPConstants.HOSTS_WEB[LiveSDK.getDeployType().getType()].concat("appapi/");
         String url = host.substring(0, host.lastIndexOf("appapi")).concat("m/quiz/student").concat(params);
         LPLogger.i(getClass().getSimpleName() + " : " + url);
         ((WebView) $.id(R.id.wv_quiz_main).view()).loadUrl(url);

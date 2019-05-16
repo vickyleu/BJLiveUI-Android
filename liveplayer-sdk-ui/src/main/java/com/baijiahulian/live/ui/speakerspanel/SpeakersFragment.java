@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
@@ -26,6 +27,7 @@ import com.baijiahulian.live.ui.utils.QueryPlus;
 import com.baijiahulian.live.ui.utils.RxUtils;
 import com.baijiahulian.live.ui.utils.VideoDefinitionUtil;
 import com.baijiahulian.live.ui.viewsupport.BJTouchHorizontalScrollView;
+import com.baijiayun.bjyrtcengine.BJYRtcEventObserver;
 import com.baijiayun.livecore.context.LPConstants;
 import com.baijiayun.livecore.models.imodels.IMediaModel;
 import com.baijiayun.livecore.models.imodels.IUserModel;
@@ -33,7 +35,9 @@ import com.baijiayun.livecore.ppt.photoview.OnDoubleTapListener;
 import com.baijiayun.livecore.ppt.photoview.OnViewTapListener;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -65,7 +69,6 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
     private BJTouchHorizontalScrollView scrollView;
     private static final int SHRINK_THRESHOLD = 3;
     private boolean disableSpeakQueuePlaceholder;
-    private boolean isClickByUser = false;
     private CompositeDisposable timerList = new CompositeDisposable();
 
     @Override
@@ -167,9 +170,8 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
             if (model == null) return;
             if (model.getUser() == null) return;
 
-            String userId = TextUtils.isEmpty(model.getMediaId()) ? model.getUser().getUserId() : model.getMediaId();
+            String userId = TextUtils.isEmpty(model.getUser().getUserId()) ? model.getUser().getUserId() : model.getUser().getUserId();
 
-            isClickByUser = false;
 
             if (model.isVideoOn() && presenter.isAutoPlay()) {
 
@@ -221,6 +223,9 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
         }
     }
 
+    //当前发言视图集合
+    private List<View> speakersView = new ArrayList<>();
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void notifyItemInserted(final int position, View addView) {
@@ -232,12 +237,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
             case VIEW_TYPE_PRESENTER:
                 IMediaModel presenterSpeakModel = presenter.getSpeakModel(position);
 
-                String userId;
-                if (!TextUtils.isEmpty(presenterSpeakModel.getMediaId())) {
-                    userId = presenterSpeakModel.getMediaId();
-                } else {
-                    userId = presenterSpeakModel.getUser().getUserId();
-                }
+                String userId = presenterSpeakModel.getUser().getUserId();
                 if (presenterSpeakModel.isVideoOn()) {
                     VideoView videoView;
                     if (!(addView instanceof VideoView)) {
@@ -259,9 +259,12 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
                         gestureDetector.onTouchEvent(event);
                         return true;
                     });
-
+                    videoView.setTag(userId);
+                    speakersView.add(videoView);
                 } else {
-                    container.addView(generateSpeakView(presenterSpeakModel), position);
+                    View speakerAudioView = generateSpeakView(presenterSpeakModel);
+                    speakersView.add(speakerAudioView);
+                    container.addView(speakerAudioView, position);
                     if (presenterSpeakModel.isAudioOn()) // 新主讲打开音频
                         presenter.getPlayer().playAudio(presenter.getItem(position));
                 }
@@ -293,12 +296,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
                     presenter.getRecorder().publish();
                 if (!presenter.getRecorder().isVideoAttached()) {
                     Disposable timer = Observable.timer(1, TimeUnit.SECONDS).observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(new Consumer<Long>() {
-                                @Override
-                                public void accept(Long aLong) {
-                                    presenter.getRecorder().attachVideo();
-                                }
-                            });
+                            .subscribe(aLong -> presenter.getRecorder().attachVideo());
                     timerList.add(timer);
                 }
                 break;
@@ -306,7 +304,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
                 IMediaModel model = presenter.getSpeakModel(position);
                 VideoView videoView;
                 if (!(addView instanceof VideoView)) {
-                    videoView = new VideoView(getContext(), presenter.isNeedLoading(model.getMediaId()));
+                    videoView = new VideoView(getContext(), presenter.isNeedLoading(model.getUser().getUserId()));
                     videoView.setName(appendName(model.getUser(), false));
                     // 拉流
                     presenter.getPlayer().playVideo(presenter.getItem(position), videoView.getLpVideoView());
@@ -324,6 +322,8 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
                     gestureDetector.onTouchEvent(event);
                     return true;
                 });
+                videoView.setTag(model.getUser().getUserId());
+                speakersView.add(videoView);
                 break;
             case VIEW_TYPE_SPEAKER:
                 IMediaModel speakerModel = presenter.getSpeakModel(position);
@@ -332,10 +332,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
                 addView(view, position);
                 if (speakerModel.isAudioOn())
                     presenter.getPlayer().playAudio(presenter.getItem(position));
-//                if (speakerModel.isVideoOn()) {
-//                    presenter.playVideo(speakerModel.getUser().getUserId());
-//                }
-
+                speakersView.add(view);
                 break;
             case VIEW_TYPE_APPLY:
                 View applyView = generateApplyView(presenter.getApplyModel(position));
@@ -344,14 +341,11 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
                 WindowManager wm = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
                 if ((position + 1) * params.width > wm.getDefaultDisplay().getWidth())
                     speakerRequest.setVisibility(View.VISIBLE);
-                speakerRequest.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        speakerRequest.setAnimation(createAnimation());
-                        speakerRequest.startAnimation(createAnimation());
-                        speakerRequest.setVisibility(View.GONE);
-                        scrollView.smoothScrollTo((position + 1) * params.width, 0);
-                    }
+                speakerRequest.setOnClickListener(v -> {
+                    speakerRequest.setAnimation(createAnimation());
+                    speakerRequest.startAnimation(createAnimation());
+                    speakerRequest.setVisibility(View.GONE);
+                    scrollView.smoothScrollTo((position + 1) * params.width, 0);
                 });
                 break;
             default:
@@ -404,6 +398,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
         if (container.getChildCount() == 0) {
             presenter.notifyNoSpeakers();
         }
+        speakersView.remove(removedView);
         return removedView;
     }
 
@@ -431,10 +426,8 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
             if (model == null) return;
             if (model.getUser() == null) return;
 
-            isClickByUser = false;
-
             if (model.isVideoOn() && presenter.isAutoPlay()) {
-                String userId = TextUtils.isEmpty(model.getMediaId()) ? model.getUser().getUserId() : model.getMediaId();
+                String userId = TextUtils.isEmpty(model.getUser().getUserId()) ? model.getUser().getUserId() : model.getUser().getUserId();
 
                 if (!(videoView instanceof VideoView))
                     videoView = new VideoView(getContext(), presenter.isNeedLoading(userId));
@@ -489,6 +482,58 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
         }
     }
 
+    /**
+     * 更新音视频窗口的网络状态
+     * @param remoteStreamStats
+     */
+    @Override
+    public void updateNetworkTips(BJYRtcEventObserver.RemoteStreamStats remoteStreamStats) {
+        if (getContext() == null) {
+            return;
+        }
+        //拉流是主讲
+        if (presenter.getLiveRoom().getPresenterUser().getUserId().equals(remoteStreamStats.uid)) {
+            double lossRate = presenter.isPresenterVideoOn() ? remoteStreamStats.receivedVideoLostRate : remoteStreamStats.receivedAudioLossRate;
+            if (lossRate > presenter.getPresenterUpLinkLossRate() * 2) {
+                updateNetworkTips(recorderView.getNetworkTextView(), lossRate);
+                return;
+            }
+        }
+
+        for (View view : speakersView) {
+            String userId = (String) view.getTag();
+            String keyUserId = remoteStreamStats.uid;
+            double lossRate = remoteStreamStats.receivedVideoLostRate;
+            //视频播放窗口
+            if (keyUserId.equals(userId) && view instanceof VideoView) {
+                updateNetworkTips(((VideoView) view).getVideoViewNetworkTextView(), lossRate);
+                break;
+            }
+            //音频播放窗口
+            userId = (String) view.getTag(R.id.lp_speaker_audio_type_tag);
+            lossRate = remoteStreamStats.receivedAudioLossRate;
+            if (keyUserId.equals(userId)) {
+                updateNetworkTips(view.findViewById(R.id.item_speak_speaker_network), lossRate);
+                break;
+            }
+        }
+    }
+
+    private void updateNetworkTips(TextView textView, double lossRate){
+        List<Integer> lossRateLevelList = presenter.getLiveRoom().getPartnerConfig().packetLossRate.packetLossRateLevel;
+        if (lossRate < lossRateLevelList.get(0)) {
+            textView.setText("");
+        } else if (lossRate < lossRateLevelList.get(1)) {
+            textView.setText(getString(R.string.live_network_tips_level_1));
+            textView.setTextColor(getContext().getResources().getColor(R.color.live_low_network_tips_middle));
+        } else if (lossRate < lossRateLevelList.get(2)) {
+            textView.setText(getString(R.string.live_network_tips_level_2));
+            textView.setTextColor(getContext().getResources().getColor(R.color.live_low_network_tips_middle));
+        } else {
+            textView.setText(getString(R.string.live_network_tips_level_3));
+            textView.setTextColor(getContext().getResources().getColor(R.color.live_low_network_tips_terrible));
+        }
+    }
 
     @Override
     public View removeViewAt(int position) {
@@ -523,7 +568,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
         if (view == null || view.getParent() != null) return;
         if (view instanceof VideoView) {
             ((VideoView) view).getLpVideoView().setZOrderMediaOverlay(true);
-            ((VideoView) view).setAwardLayoutVisibility(View.VISIBLE);
+            ((VideoView) view).setAwardTvVisibility(View.VISIBLE);
             IMediaModel model = presenter.getSpeakModel(position);
             if (model == null) return;
             if (model.getUser() != null && (model.getUser().getType() == LPConstants.LPUserType.Teacher || model.getUser().getType() == LPConstants.LPUserType.Assistant)) {
@@ -532,7 +577,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
         }
         if (view instanceof RecorderView) {
             ((RecorderView) (view)).setZOrderMediaOverlay(true);
-            ((RecorderView) view).setAwardLayoutVisibility(View.VISIBLE);
+            ((RecorderView) view).setAwardTvVisibility(View.VISIBLE);
             if (presenter.isTeacherOrAssistant()) {
                 ((RecorderView) view).setAwardTvVisibility(View.GONE);
             }
@@ -622,21 +667,10 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
         }
     }
 
-    @SuppressLint("CheckResult")
-    private View generateApplyView(final IUserModel model) {
-        View view = LayoutInflater.from(getActivity()).inflate(R.layout.item_speak_apply, container, false);
-        QueryPlus q = QueryPlus.with(view);
-        q.id(R.id.item_speak_apply_avatar).image(getActivity(), model.getAvatar());
-        q.id(R.id.item_speak_apply_name).text(model.getName() + getContext().getString(R.string.live_media_speak_applying));
-        q.id(R.id.item_speak_apply_agree).clicked().subscribe(integer -> presenter.agreeSpeakApply(model.getUserId()));
-        q.id(R.id.item_speak_apply_disagree).clicked().subscribe(integer -> presenter.disagreeSpeakApply(model.getUserId()));
-        return view;
-    }
-
     private View generateSpeakView(final IMediaModel model) {
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.item_speak_speaker, container, false);
         QueryPlus q = QueryPlus.with(view);
-        String userId = TextUtils.isEmpty(model.getMediaId()) ? model.getUser().getUserId() : model.getMediaId();
+        String userId = model.getUser().getUserId();
         if (presenter.getItemViewType(userId) == VIEW_TYPE_PRESENTER)
             q.id(R.id.item_speak_speaker_name).text(model.getUser().getName() + (model.getUser().getType() == LPConstants.LPUserType.Teacher ? getString(R.string.live_teacher_hint) : getString(R.string.live_presenter_hint)));
         else
@@ -645,6 +679,18 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
         q.id(R.id.item_speak_speaker_avatar).image(getActivity(), avatar);
         q.id(R.id.item_speak_speaker_video_label).visibility(model.isVideoOn() ? View.VISIBLE : View.GONE);
         q.contentView().setOnClickListener(v -> showOptionDialog(userId));
+        view.setTag(R.id.lp_speaker_audio_type_tag, model.getUser().getUserId());
+        return view;
+    }
+
+    @SuppressLint("CheckResult")
+    private View generateApplyView(final IUserModel model) {
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.item_speak_apply, container, false);
+        QueryPlus q = QueryPlus.with(view);
+        q.id(R.id.item_speak_apply_avatar).image(getActivity(), model.getAvatar());
+        q.id(R.id.item_speak_apply_name).text(model.getName() + getContext().getString(R.string.live_media_speak_applying));
+        q.id(R.id.item_speak_apply_agree).clicked().subscribe(integer -> presenter.agreeSpeakApply(model.getUserId()));
+        q.id(R.id.item_speak_apply_disagree).clicked().subscribe(integer -> presenter.disagreeSpeakApply(model.getUserId()));
         return view;
     }
 
@@ -688,7 +734,6 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
 
     private void showOptionDialog(final String tag) {
         if (TextUtils.isEmpty(tag)) return;
-        isClickByUser = true;
         List<String> options = new ArrayList<>();
         int viewType = presenter.getItemViewType(tag);
         if (viewType == -1) return;
@@ -820,12 +865,9 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
         if (getActivity() == null) return;
         new MaterialDialog.Builder(getActivity())
                 .items(options)
-                .itemsCallback(new MaterialDialog.ListCallback() {
-                    @Override
-                    public void onSelection(MaterialDialog dialog, View itemView, int position, CharSequence text) {
-                        presenter.switchVideoDefinition(tag, VideoDefinitionUtil.getVideoDefinitionTypeFromLabel(text.toString()));
-                        dialog.dismiss();
-                    }
+                .itemsCallback((dialog, itemView, position, text) -> {
+                    presenter.switchVideoDefinition(tag, VideoDefinitionUtil.getVideoDefinitionTypeFromLabel(text.toString()));
+                    dialog.dismiss();
                 })
                 .show();
     }
@@ -889,6 +931,7 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
         super.onDestroy();
         presenter = null;
         timerList.clear();
+        speakersView.clear();
     }
 
     private void updateAwardTv(VideoView videoView, IMediaModel model) {

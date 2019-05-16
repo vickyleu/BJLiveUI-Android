@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/live_award_count_tv"
@@ -24,6 +23,19 @@
         tools:visibility="visible"
         android:layout_marginLeft="4dp" />
 
+
+    <TextView
+        android:id="@+id/item_video_network"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="@string/live_network_tips_level_1"
+        android:textSize="12sp"
+        android:layout_alignParentEnd="true"
+        android:paddingEnd="4dp"
+        android:paddingRight="4dp"
+        android:layout_alignParentRight="true"
+         />
+
     <TextView
         android:id="@+id/live_name_tv"
         android:layout_width="match_parent"
@@ -31,10 +43,10 @@
         android:textColor="@color/live_white"
         android:textSize="13sp"
         android:lines="1"
-        android:gravity="center_horizontal"
         android:background="@drawable/shape_remote_name_bg"
+        android:layout_below="@id/item_video_network"
         tools:text="周之超"
         android:ellipsize="end"
         android:paddingStart="6dp"
         android:paddingLeft="6dp" />
-</LinearLayout>
+</RelativeLayout>

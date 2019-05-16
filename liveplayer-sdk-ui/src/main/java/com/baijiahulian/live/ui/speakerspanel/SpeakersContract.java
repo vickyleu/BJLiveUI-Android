@@ -3,6 +3,7 @@ package com.baijiahulian.live.ui.speakerspanel;
 import com.baijiahulian.live.ui.base.BasePresenter;
 import com.baijiahulian.live.ui.base.BaseView;
 import com.baijiahulian.live.ui.ppt.MyPPTView;
+import com.baijiayun.bjyrtcengine.BJYRtcEventObserver;
 import com.baijiayun.livecore.context.LPConstants;
 import com.baijiayun.livecore.context.LiveRoom;
 import com.baijiayun.livecore.models.imodels.IMediaModel;
@@ -10,6 +11,8 @@ import com.baijiayun.livecore.models.imodels.IUserModel;
 import com.baijiayun.livecore.models.launch.LPEnterRoomNative;
 import com.baijiayun.livecore.wrapper.LPPlayer;
 import com.baijiayun.livecore.wrapper.LPRecorder;
+
+import java.util.Map;
 
 /**
  * Created by Shubo on 2017/6/5.
@@ -19,7 +22,7 @@ interface SpeakersContract {
 
     int VIEW_TYPE_APPLY = 0;
     int VIEW_TYPE_RECORD = 1;
-    int VIEW_TYPE_SPEAKER = 2;
+    int VIEW_TYPE_SPEAKER = 2; //音频
     int VIEW_TYPE_VIDEO_PLAY = 3;
     int VIEW_TYPE_PPT = 4;
     int VIEW_TYPE_PRESENTER = 5;
@@ -55,6 +58,8 @@ interface SpeakersContract {
         void notifyAwardCountChange(int position, int awardCount);
 
         void updateView(int position, android.view.View videoView);
+
+        void updateNetworkTips(BJYRtcEventObserver.RemoteStreamStats stats);
     }
 
     interface Presenter extends BasePresenter {
@@ -146,5 +151,8 @@ interface SpeakersContract {
 
         boolean isUseWebRTC();
 
+        double getPresenterUpLinkLossRate();
+
+        boolean isPresenterVideoOn();
     }
 }

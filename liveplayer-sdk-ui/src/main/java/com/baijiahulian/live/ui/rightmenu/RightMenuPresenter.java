@@ -125,7 +125,6 @@ public class RightMenuPresenter implements RightMenuContract.Presenter {
 
     @Override
     public void onSpeakInvite(int confirm) {
-        if (liveRoomRouterListener.getLiveRoom().getGroupId() != 0) return;
         liveRoomRouterListener.getLiveRoom().sendSpeakInvite(confirm);
         if (confirm == 1) {
             //接受
@@ -175,9 +174,6 @@ public class RightMenuPresenter implements RightMenuContract.Presenter {
             view.showStudentRightMenu();
             if (liveRoomRouterListener.getLiveRoom().getPartnerConfig().liveHideUserList == 1) {
                 view.hideUserList();
-            }
-            if (liveRoomRouterListener.getLiveRoom().getGroupId() != 0) {
-                view.hideSpeakApply();
             }
         }
 
@@ -439,8 +435,6 @@ public class RightMenuPresenter implements RightMenuContract.Presenter {
                         liveRoomRouterListener.showSpeakInviteDlg(lpSpeakInviteModel.invite);
                     }
                 });
-
-//        liveRoomRouterListener.getLiveRoom().getGroupId()
     }
 
     @Override

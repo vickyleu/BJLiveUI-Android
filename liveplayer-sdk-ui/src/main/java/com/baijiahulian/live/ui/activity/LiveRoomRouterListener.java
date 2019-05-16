@@ -167,6 +167,8 @@ public interface LiveRoomRouterListener {
 
     boolean checkCameraPermission();
 
+    boolean checkTeacherCameraPermission(LiveRoom liveRoom);
+
     void attachLocalAudio();
 
     void notifyPPTResumeInSpeakers();

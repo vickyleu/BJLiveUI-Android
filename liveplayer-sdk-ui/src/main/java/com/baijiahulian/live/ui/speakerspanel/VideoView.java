@@ -25,8 +25,8 @@ import com.baijiayun.livecore.wrapper.impl.LPVideoView;
 
 public class VideoView extends FrameLayout {
 
-    private TextView tvName, awardTv;
-    private LinearLayout awardAndNameLayout;
+    private TextView tvName, awardTv, networkTv;
+    private View bottomLayout;
     private LPVideoView lpVideoView;
     private ImageView loadingView;
 
@@ -62,16 +62,16 @@ public class VideoView extends FrameLayout {
         }
         this.addView(lpVideoView);
 
-        awardAndNameLayout = (LinearLayout) LayoutInflater.from(getContext()).inflate(R.layout.video_name_award_layout, null);
-        tvName = awardAndNameLayout.findViewById(R.id.live_name_tv);
-        awardTv = awardAndNameLayout.findViewById(R.id.live_award_count_tv);
+        bottomLayout = LayoutInflater.from(getContext()).inflate(R.layout.video_name_award_layout, null);
+        tvName = bottomLayout.findViewById(R.id.live_name_tv);
+        awardTv = bottomLayout.findViewById(R.id.live_award_count_tv);
+        networkTv = bottomLayout.findViewById(R.id.item_video_network);
         tvName.setText(name);
-        tvName.setVisibility(GONE);
         FrameLayout.LayoutParams tvLp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         tvLp.gravity = Gravity.BOTTOM | Gravity.START;
-        awardAndNameLayout.setLayoutParams(tvLp);
-        this.addView(awardAndNameLayout);
-        awardAndNameLayout.setVisibility(View.GONE);
+        bottomLayout.setLayoutParams(tvLp);
+        bottomLayout.setVisibility(View.GONE);
+        this.addView(bottomLayout);
 
         loadingText = new TextView(getContext());
         loadingText.setLines(1);
@@ -110,7 +110,7 @@ public class VideoView extends FrameLayout {
         loadingView.clearAnimation();
         isLoading = false;
         tvName.setVisibility(VISIBLE);
-        awardAndNameLayout.setVisibility(VISIBLE);
+        bottomLayout.setVisibility(VISIBLE);
     }
 
     private void closeLoading() {
@@ -119,7 +119,7 @@ public class VideoView extends FrameLayout {
         loadingView.clearAnimation();
         isLoading = false;
         tvName.setVisibility(VISIBLE);
-        awardAndNameLayout.setVisibility(VISIBLE);
+        bottomLayout.setVisibility(VISIBLE);
     }
 
     @Override
@@ -166,7 +166,13 @@ public class VideoView extends FrameLayout {
         awardTv.setVisibility(visibility);
     }
 
-    public void setAwardLayoutVisibility(int visibility){
-        awardAndNameLayout.setVisibility(visibility);
+    public void updateNetworkTip(String content, int textColor){
+        networkTv.setText(content);
+        networkTv.setTextColor(textColor);
     }
+
+    public TextView getVideoViewNetworkTextView(){
+        return networkTv;
+    }
+
 }

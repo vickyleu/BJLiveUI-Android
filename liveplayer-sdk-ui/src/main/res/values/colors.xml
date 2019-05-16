@@ -46,4 +46,7 @@
     <color name="live_grey_round_option">#EAEAEA</color>>
     <color name="live_award_golden">#F7E123</color>
 
+    <color name="live_low_network_tips_middle">#FFF5A623</color>
+    <color name="live_low_network_tips_terrible">#FFFF0000</color>
+
 </resources>

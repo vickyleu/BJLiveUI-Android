@@ -11,6 +11,7 @@ import com.baijiahulian.live.ui.R;
 import com.baijiahulian.live.ui.base.BaseDialogFragment;
 import com.baijiahulian.live.ui.utils.QueryPlus;
 import com.baijiayun.livecore.context.LPConstants;
+import com.baijiayun.livecore.context.LPError;
 import com.baijiayun.livecore.utils.LPRxUtils;
 
 import java.util.ArrayList;
@@ -45,6 +46,9 @@ public class SettingDialogFragment extends BaseDialogFragment implements Setting
     protected void init(Bundle savedInstanceState, Bundle arguments) {
         super.title(getString(R.string.live_setting)).editable(false);
         $ = QueryPlus.with(contentView);
+        if (presenter.isUseWebRTC()) {
+            $.id(R.id.rl_setting_definition_webrtc).view().setVisibility(View.VISIBLE);
+        }
         $.id(R.id.dialog_setting_mic).clicked(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,10 +89,6 @@ public class SettingDialogFragment extends BaseDialogFragment implements Setting
         $.id(R.id.dialog_setting_radio_definition_low).clicked(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (presenter.isUseWebRTC()) {
-                    showToast("webRTC课程暂不支持切换清晰度");
-                    return;
-                }
                 if (checkClickable(getString(R.string.live_frequent_error_resolution)))
                     presenter.setDefinitionLow();
             }
@@ -110,15 +110,24 @@ public class SettingDialogFragment extends BaseDialogFragment implements Setting
         $.id(R.id.dialog_setting_radio_definition_high).clicked(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (presenter.isUseWebRTC()) {
-                    showToast("webRTC课程暂不支持切换清晰度");
-                    return;
-                }
                 if (checkClickable(getString(R.string.live_frequent_error_resolution)))
                     presenter.setDefinitionHigh();
             }
         });
-
+        $.id(R.id.dialog_setting_radio_definition_720).clicked(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkClickable(getString(R.string.live_frequent_error_resolution)))
+                    presenter.setDefinition_720();
+            }
+        });
+        $.id(R.id.dialog_setting_radio_definition_1080).clicked(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkClickable(getString(R.string.live_frequent_error_resolution)))
+                    presenter.setDefinition_1080();
+            }
+        });
         $.id(R.id.dialog_setting_radio_link_up_1).clicked(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -165,7 +174,7 @@ public class SettingDialogFragment extends BaseDialogFragment implements Setting
                                     dialog.dismiss();
                                 })
                                 .show();
-                    }else{
+                    } else {
                         presenter.setDownLinkTCP();
                     }
                 }
@@ -290,19 +299,63 @@ public class SettingDialogFragment extends BaseDialogFragment implements Setting
     }
 
     @Override
-    public void showDefinitionLow() {
+    public void showDefinitionLow(LPError lpError) {
+        if (lpError != null) {
+            showToast(lpError.getMessage());
+        }
         $.id(R.id.dialog_setting_radio_definition_low).enable(false);
         $.id(R.id.dialog_setting_radio_definition_high).enable(true);
+        $.id(R.id.dialog_setting_radio_definition_720).enable(true);
+        $.id(R.id.dialog_setting_radio_definition_1080).enable(true);
         ((Button) $.id(R.id.dialog_setting_radio_definition_low).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_white));
         ((Button) $.id(R.id.dialog_setting_radio_definition_high).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_text_color));
+        ((Button) $.id(R.id.dialog_setting_radio_definition_720).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_text_color));
+        ((Button) $.id(R.id.dialog_setting_radio_definition_1080).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_text_color));
     }
 
     @Override
-    public void showDefinitionHigh() {
+    public void showDefinitionHigh(LPError lpError) {
+        if (lpError != null) {
+            showToast(lpError.getMessage());
+        }
         $.id(R.id.dialog_setting_radio_definition_low).enable(true);
         $.id(R.id.dialog_setting_radio_definition_high).enable(false);
+        $.id(R.id.dialog_setting_radio_definition_720).enable(true);
+        $.id(R.id.dialog_setting_radio_definition_1080).enable(true);
         ((Button) $.id(R.id.dialog_setting_radio_definition_low).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_text_color));
         ((Button) $.id(R.id.dialog_setting_radio_definition_high).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_white));
+        ((Button) $.id(R.id.dialog_setting_radio_definition_720).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_text_color));
+        ((Button) $.id(R.id.dialog_setting_radio_definition_1080).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_text_color));
+    }
+
+    @Override
+    public void showDefinition_720(LPError lpError) {
+        if (lpError != null) {
+            showToast(lpError.getMessage());
+        }
+        $.id(R.id.dialog_setting_radio_definition_low).enable(true);
+        $.id(R.id.dialog_setting_radio_definition_high).enable(true);
+        $.id(R.id.dialog_setting_radio_definition_720).enable(false);
+        $.id(R.id.dialog_setting_radio_definition_1080).enable(true);
+        ((Button) $.id(R.id.dialog_setting_radio_definition_low).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_text_color));
+        ((Button) $.id(R.id.dialog_setting_radio_definition_high).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_text_color));
+        ((Button) $.id(R.id.dialog_setting_radio_definition_720).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_white));
+        ((Button) $.id(R.id.dialog_setting_radio_definition_1080).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_text_color));
+    }
+
+    @Override
+    public void showDefinition_1080(LPError lpError) {
+        if (lpError != null) {
+            showToast(lpError.getMessage());
+        }
+        $.id(R.id.dialog_setting_radio_definition_low).enable(true);
+        $.id(R.id.dialog_setting_radio_definition_high).enable(true);
+        $.id(R.id.dialog_setting_radio_definition_720).enable(true);
+        $.id(R.id.dialog_setting_radio_definition_1080).enable(false);
+        ((Button) $.id(R.id.dialog_setting_radio_definition_low).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_text_color));
+        ((Button) $.id(R.id.dialog_setting_radio_definition_high).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_text_color));
+        ((Button) $.id(R.id.dialog_setting_radio_definition_720).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_text_color));
+        ((Button) $.id(R.id.dialog_setting_radio_definition_1080).view()).setTextColor(ContextCompat.getColor(getContext(), R.color.live_white));
     }
 
     @Override

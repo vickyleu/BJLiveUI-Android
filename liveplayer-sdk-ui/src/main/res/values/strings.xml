@@ -34,6 +34,8 @@
     <string name="live_setting_definition">画质设置：</string>
     <string name="live_setting_definition_low">标清</string>
     <string name="live_setting_definition_high">高清</string>
+    <string name="live_setting_definition_720">720p</string>
+    <string name="live_setting_definition_1080">1080p</string>
     <string name="live_setting_link_type">线路选择：</string>
     <string name="live_setting_link_type_up1">发送1</string>
     <string name="live_setting_link_type_up2">发送2</string>
@@ -54,7 +56,7 @@
     <string name="live_media_group_fail">分组内禁止发言</string>
     <string name="live_loading_more">正在加载…</string>
     <string name="live_media_speak_apply_agree">老师同意了您的发言请求</string>
-    <string name="live_media_speak_apply_disagree">老师拒绝了您的发言请求</string>
+    <string name="live_media_speak_apply_disagree">稍等一下，一会请你回答</string>
     <string name="live_media_speak_closed_by_teacher">老师结束了您的发言</string>
     <string name="live_media_speak_closed_by_server">服务器拒绝申请发言，音视频并发已达上限</string>
     <string name="live_force_speak_closed_by_server">服务器拒绝强制发言，音视频并发已达上限</string>
@@ -164,5 +166,11 @@
     <string name="live_room_speak_apply_res_result">发言人数已满，请先关闭其他人音视频。</string>
     <string name="live_room_question_answer_text">问答</string>
     <string name="live_room_network_reminder">当前网络状况差</string>
+    <string name="live_outof_video_resolution_low_tip">超出可设置分辨率范围,已设置最低分辨率</string>
+    <string name="live_outof_video_resolution_high_tip">超出可设置分辨率范围,已设置最高分辨率</string>
+
+    <string name="live_network_tips_level_1">网络较差</string>
+    <string name="live_network_tips_level_2">网络差</string>
+    <string name="live_network_tips_level_3">网络极差</string>
 </resources>
 

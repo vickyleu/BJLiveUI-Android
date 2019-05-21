@@ -79,6 +79,7 @@ public class SettingPresenter implements SettingContract.Presenter {
         else
             view.showBeautyFilterDisable();
 
+        view.showDefinition(recorder.getMaxVideoDefinition());
         if (recorder.getVideoDefinition() == LPConstants.LPResolutionType.HIGH)
             view.showDefinitionHigh(null);
         else if(recorder.getVideoDefinition() == LPConstants.LPResolutionType._720)

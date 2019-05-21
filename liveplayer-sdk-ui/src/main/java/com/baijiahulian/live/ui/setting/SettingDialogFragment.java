@@ -359,6 +359,31 @@ public class SettingDialogFragment extends BaseDialogFragment implements Setting
     }
 
     @Override
+    public void showDefinition(LPConstants.LPResolutionType resolutionType) {
+        switch (resolutionType) {
+            case LOW:
+                $.id(R.id.dialog_setting_radio_definition_high).gone();
+                $.id(R.id.dialog_setting_radio_definition_720).gone();
+                $.id(R.id.dialog_setting_radio_definition_1080).gone();
+                break;
+            case HIGH:
+                $.id(R.id.dialog_setting_radio_definition_720).gone();
+                $.id(R.id.dialog_setting_radio_definition_1080).gone();
+                break;
+            case _720:
+                $.id(R.id.dialog_setting_radio_definition_1080).gone();
+                break;
+            case _1080:
+                break;
+            default:
+                $.id(R.id.dialog_setting_radio_definition_high).gone();
+                $.id(R.id.dialog_setting_radio_definition_720).gone();
+                $.id(R.id.dialog_setting_radio_definition_1080).gone();
+                break;
+        }
+    }
+
+    @Override
     public void showUpLinkTCP() {
         $.id(R.id.dialog_setting_radio_link_up_1).enable(false);
         $.id(R.id.dialog_setting_radio_link_up_2).enable(true);

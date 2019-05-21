@@ -121,7 +121,7 @@ public class LeftMenuFragment extends BaseFragment implements LeftMenuContract.V
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
         presenter = null;
     }

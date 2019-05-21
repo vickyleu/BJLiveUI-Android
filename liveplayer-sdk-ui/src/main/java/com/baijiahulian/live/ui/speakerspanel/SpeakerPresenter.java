@@ -17,6 +17,7 @@ import com.baijiayun.livecore.models.launch.LPEnterRoomNative;
 import com.baijiayun.livecore.utils.LPKVOSubjectWithLastValue;
 import com.baijiayun.livecore.utils.LPLogger;
 import com.baijiayun.livecore.utils.LimitedQueue;
+import com.baijiayun.livecore.viewmodels.debug.IDebugLink;
 import com.baijiayun.livecore.wrapper.LPPlayer;
 import com.baijiayun.livecore.wrapper.LPRecorder;
 import com.baijiayun.livecore.wrapper.listener.LPPlayerListener;
@@ -138,7 +139,7 @@ public class SpeakerPresenter implements SpeakersContract.Presenter {
                     if (fullId.endsWith("1")) {
                         subFull = fullId.substring(0, fullId.lastIndexOf("1")) + "0";
                     }
-                    if (subFull.equals(getLiveRoom().getPresenterUser().getUserId())) {
+                    if (getLiveRoom().getPresenterUser() != null && subFull.equals(getLiveRoom().getPresenterUser().getUserId())) {
                         if (fullId.endsWith("1"))
                             displayMap.get(SpeakersType.Presenter).add(fullId);
                         else
@@ -239,7 +240,7 @@ public class SpeakerPresenter implements SpeakersContract.Presenter {
         for (IMediaModel model : speakerModels.values()) {
             // 老师有第二路流 辅助摄像头的教室不让切主讲
             if ((model.getMediaSourceType() == LPConstants.MediaSourceType.ExtScreenShare || model.getMediaSourceType() == LPConstants.MediaSourceType.ExtCamera)
-                    && model.getUser().getUserId().equals(routerListener.getLiveRoom().getPresenterUser().getUserId()) && model.isVideoOn()) {
+                    && routerListener.getLiveRoom().getPresenterUser() != null && model.getUser().getUserId().equals(routerListener.getLiveRoom().getPresenterUser().getUserId()) && model.isVideoOn()) {
                 displayMap.get(SpeakersType.Presenter).add(model.getUser().getUserId());
                 continue;
             }
@@ -251,7 +252,7 @@ public class SpeakerPresenter implements SpeakersContract.Presenter {
             } else {
                 if (!model.getUser().getUserId().equals(routerListener.getLiveRoom().getPresenterUser().getUserId()) && model.isVideoOn())
                     displayMap.get(SpeakersType.VideoPlay).add(model.getUser().getUserId());
-                else if (!model.getUser().getUserId().equals(routerListener.getLiveRoom().getPresenterUser().getUserId()) && !model.isVideoOn())
+                else if (!model.getUser().getUserId().equals(routerListener.getLiveRoom().getPresenterUser().getUserId()) && !model.isVideoOn() && model.isAudioOn())
                     displayMap.get(SpeakersType.Speaking).add(model.getUser().getUserId());
             }
         }
@@ -302,7 +303,7 @@ public class SpeakerPresenter implements SpeakersContract.Presenter {
                     LPLogger.e("media_publish onError");
                 })
                 .subscribe(iMediaModel -> {
-                    Log.e("speakerpresenter", iMediaModel.getMediaId() + " " + iMediaModel.isAudioOn() + " " + iMediaModel.isVideoOn());
+                    LPLogger.e("speakerpresenter", iMediaModel.getMediaId() + " " + iMediaModel.isAudioOn() + " " + iMediaModel.isVideoOn());
                     if (fullScreenKVO.getParameter() != null && fullScreenKVO.getParameter().equals(iMediaModel.getUser().getUserId())) {
                         if (!iMediaModel.isVideoOn()) {
                             setPPTToFullScreen();
@@ -314,7 +315,7 @@ public class SpeakerPresenter implements SpeakersContract.Presenter {
                                     view.notifyItemInserted(indexOfUserId(iMediaModel.getUser().getUserId()), null);
                                 }
                             } else if (displayMap.get(SpeakersType.Presenter).contains(iMediaModel.getUser().getUserId())) {
-                                if (getLiveRoom().getPresenterUser().getUserId().equals(iMediaModel.getUser().getUserId()))
+                                if (getLiveRoom().getPresenterUser() != null && getLiveRoom().getPresenterUser().getUserId().equals(iMediaModel.getUser().getUserId()))
                                     view.notifyItemChanged(0, iMediaModel);
                                 else {
                                     view.notifyItemDeleted(indexOfUserId(iMediaModel.getUser().getUserId()));
@@ -780,18 +781,18 @@ public class SpeakerPresenter implements SpeakersContract.Presenter {
                 .subscribe(aVoid -> awardRecord.clear());
 
         //Debug信息UI状态
-//        mSubscriptionDebugStateUI = ((IDebugLink)routerListener.getLiveRoom().getRecorder())
-//                .getObservableDebugStateUI()
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(isShowLocalVideo -> {
-//                    if (isShowLocalVideo) {
-//                        attachVideo();
-//                        getLiveRoom().getRecorder().attachVideo();
-//                    } else {
-//                        getLiveRoom().getRecorder().detachVideo();
-//                        detachVideo();
-//                    }
-//                });
+        mSubscriptionDebugStateUI = ((IDebugLink)routerListener.getLiveRoom().getRecorder())
+                .getObservableDebugStateUI()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(isShowLocalVideo -> {
+                    if (isShowLocalVideo) {
+                        attachVideo();
+                        getLiveRoom().getRecorder().attachVideo();
+                    } else {
+                        getLiveRoom().getRecorder().detachVideo();
+                        detachVideo();
+                    }
+                });
 
         subscriptionOfVideoLossRate = routerListener.getLiveRoom().getPlayer()
                 .getObservableOfDownLinkLossRate()
@@ -802,6 +803,7 @@ public class SpeakerPresenter implements SpeakersContract.Presenter {
         presenterUpLinkLossRateQueue = new LimitedQueue<>(packetLossDuration);
         //保存主讲上行丢包
         presenterLossRateDisposable = routerListener.getLiveRoom().getObservableOfLPPresenterLossRate()
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(lossRateModel -> {
                     isPresenterVideoOn = lossRateModel.type == 1;
                     presenterUpLinkLossRateQueue.add((double) lossRateModel.rate);

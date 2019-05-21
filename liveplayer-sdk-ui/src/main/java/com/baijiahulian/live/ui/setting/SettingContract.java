@@ -36,6 +36,8 @@ interface SettingContract {
 
         void showDefinition_1080(LPError lpError);
 
+        void showDefinition(LPConstants.LPResolutionType resolutionType);
+
         void showUpLinkTCP();
 
         void showUpLinkUDP();

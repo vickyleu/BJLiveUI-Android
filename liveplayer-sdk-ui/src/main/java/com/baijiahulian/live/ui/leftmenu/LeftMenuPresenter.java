@@ -1,15 +1,11 @@
 package com.baijiahulian.live.ui.leftmenu;
 
 import com.baijiahulian.live.ui.activity.LiveRoomRouterListener;
-import com.baijiayun.livecore.models.LPQuestionPullResItem;
 import com.baijiayun.livecore.models.imodels.IUserModel;
 import com.baijiayun.livecore.utils.LPRxUtils;
 
-import java.util.List;
-
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 
 
 /**
@@ -76,7 +72,8 @@ public class LeftMenuPresenter implements LeftMenuContract.Presenter {
 
     @Override
     public boolean isEnableLiveQuestionAnswer() {
-        return routerListener.getLiveRoom().getPartnerConfig().enableLiveQuestionAnswer == 1;
+        return routerListener.getLiveRoom().getPartnerConfig().enableLiveQuestionAnswer == 1
+                && routerListener.getLiveRoom().isProEnvironment();
     }
 
     @Override

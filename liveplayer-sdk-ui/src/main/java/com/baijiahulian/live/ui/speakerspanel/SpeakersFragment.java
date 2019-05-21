@@ -492,10 +492,12 @@ public class SpeakersFragment extends BaseFragment implements SpeakersContract.V
             return;
         }
         //拉流是主讲
-        if (presenter.getLiveRoom().getPresenterUser().getUserId().equals(remoteStreamStats.uid)) {
+        if (presenter.getLiveRoom().getPresenterUser() != null && remoteStreamStats.uid.equals(presenter.getLiveRoom().getPresenterUser().getUserId())) {
             double lossRate = presenter.isPresenterVideoOn() ? remoteStreamStats.receivedVideoLostRate : remoteStreamStats.receivedAudioLossRate;
             if (lossRate > presenter.getPresenterUpLinkLossRate() * 2) {
-                updateNetworkTips(recorderView.getNetworkTextView(), lossRate);
+                if(recorderView != null){
+                    updateNetworkTips(recorderView.getNetworkTextView(), lossRate);
+                }
                 return;
             }
         }

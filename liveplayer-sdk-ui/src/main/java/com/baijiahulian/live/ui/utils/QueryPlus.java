@@ -2,7 +2,7 @@ package com.baijiahulian.live.ui.utils;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.v4.view.ViewCompat;
+import androidx.core.view.ViewCompat;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.ImageView;

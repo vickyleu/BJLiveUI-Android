@@ -2,7 +2,7 @@ package com.baijiahulian.live.ui.rightbotmenu;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.view.View;
 
 import com.baijiahulian.live.ui.R;

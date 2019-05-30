@@ -1,1 +1,1 @@
-include ':app', ':liveplayer-sdk-ui'
+include ':liveplayer-sdk-ui'

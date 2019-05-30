@@ -2,8 +2,8 @@ package com.baijiahulian.live.ui.chat.emoji;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +18,7 @@ import com.baijiahulian.live.ui.utils.DisplayUtils;
 import com.baijiayun.livecore.models.imodels.IExpressionModel;
 import com.squareup.picasso.Picasso;
 
-import static android.support.v4.view.ViewPager.SCROLL_STATE_IDLE;
+import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_IDLE;
 
 /**
  * Created by Shubo on 2017/5/6.

@@ -1,6 +1,6 @@
 package com.baijiahulian.live.ui.utils;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 /**
  * Created by Shubo on 2017/2/13.

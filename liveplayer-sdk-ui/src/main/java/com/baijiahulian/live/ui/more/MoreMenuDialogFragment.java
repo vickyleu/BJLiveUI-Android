@@ -2,8 +2,8 @@ package com.baijiahulian.live.ui.more;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;

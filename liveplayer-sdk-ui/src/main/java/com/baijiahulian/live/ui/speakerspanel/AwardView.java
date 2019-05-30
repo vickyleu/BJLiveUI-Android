@@ -13,10 +13,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.media.AudioManager;
 import android.media.SoundPool;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
@@ -25,8 +24,6 @@ import android.widget.ImageView;
 import com.baijiahulian.live.ui.R;
 import com.baijiahulian.live.ui.utils.DisplayUtils;
 import com.baijiahulian.live.ui.utils.FrameAnimation;
-
-import java.util.logging.Handler;
 
 /**
  * Created by yongjiaming on 2018/10/23

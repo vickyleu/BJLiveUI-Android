@@ -195,7 +195,7 @@ public class EmojiFragment extends BaseFragment implements EmojiContract.View {
                 holder = (ViewHolder) convertView.getTag();
             }
             final IExpressionModel expressionModel = getItem(position);
-            Picasso.with(getContext()).load(expressionModel.getUrl()).into(holder.imageView);
+            new Picasso.Builder(getContext()).build().load(expressionModel.getUrl()).into(holder.imageView);
             holder.imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

@@ -53,7 +53,7 @@ public class ChatPictureViewFragment extends BaseDialogFragment implements ChatP
         imageView = (ImageView) contentView.findViewById(R.id.lp_dialog_big_picture_img);
         tvLoading = (TextView) contentView.findViewById(R.id.lp_dialog_big_picture_loading_label);
 //        btnSave = (Button) view.findViewById(R.id.lp_dialog_big_picture_save);
-        Picasso.with(getContext())
+        new Picasso.Builder(getContext()).build()
                 .load(AliCloudImageUtil.getScaledUrl(url, AliCloudImageUtil.SCALED_MFIT, DisplayUtils.getScreenWidthPixels(getContext()), DisplayUtils.getScreenHeightPixels(getContext())))
                 .memoryPolicy(NO_CACHE, NO_STORE)
                 .into(imageView, new Callback() {
@@ -63,7 +63,7 @@ public class ChatPictureViewFragment extends BaseDialogFragment implements ChatP
                     }
 
                     @Override
-                    public void onError() {
+                    public void onError(Exception e) {
                         try {
                             if (getActivity() != null)
                                 tvLoading.setText(getString(R.string.live_image_loading_fail));

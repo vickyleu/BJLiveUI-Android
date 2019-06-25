@@ -7,10 +7,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import androidx.annotation.ColorInt;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextPaint;
@@ -25,6 +21,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.annotation.ColorInt;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.baijiahulian.live.ui.R;
 import com.baijiahulian.live.ui.base.BaseFragment;
@@ -82,7 +83,7 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
 
         adapter = new MessageAdapter();
         mLayoutManager = new LinearLayoutWrapManager(getContext());
-        mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mLayoutManager.setOrientation(RecyclerView.VERTICAL);
 
         recyclerView = (RecyclerView) $.id(R.id.fragment_chat_recycler).view();
         recyclerView.getRecycledViewPool().setMaxRecycledViews(0, 0);
@@ -224,7 +225,7 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
 
         @Override
         public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
-            if(position < 0 || position >= getItemCount()){
+            if (position < 0 || position >= getItemCount()) {
                 return;
             }
             currentPosition = position;
@@ -345,7 +346,7 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
                 emojiViewHolder.tvName.setText(spanText);
                 emojiViewHolder.tvName.setMovementMethod(LinkMovementMethod.getInstance());
                 emojiViewHolder.tvName.setTextColor(textColor);
-                Picasso.with(getContext()).load(message.getUrl())
+                new Picasso.Builder(getContext()).build().load(message.getUrl())
                         .placeholder(R.drawable.live_ic_emoji_holder)
                         .error(R.drawable.live_ic_emoji_holder)
                         .resize(emojiSize, emojiSize)
@@ -362,7 +363,7 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
                     BitmapFactory.decodeFile(message.getUrl(), options);
                     int[] size = {options.outWidth, options.outHeight};
                     ChatImageUtil.calculateImageSize(size, DisplayUtils.dip2px(getContext(), 100), DisplayUtils.dip2px(getContext(), 50));
-                    Picasso.with(getContext()).load(new File(AliCloudImageUtil.getScaledUrl(message.getUrl(), AliCloudImageUtil.SCALED_MFIT, size[0], size[1])))
+                    new Picasso.Builder(getContext()).build().load(new File(AliCloudImageUtil.getScaledUrl(message.getUrl(), AliCloudImageUtil.SCALED_MFIT, size[0], size[1])))
                             .resize(size[0], size[1])
                             .placeholder(failedColorDrawable)
                             .error(failedColorDrawable)
@@ -384,7 +385,7 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
                     imageViewHolder.tvMask.setVisibility(View.GONE);
                     imageViewHolder.tvExclamation.setVisibility(View.GONE);
                     ImageTarget target = new ImageTarget(getContext(), imageViewHolder.ivImg);
-                    Picasso.with(getContext()).load(AliCloudImageUtil.getScaledUrl(message.getUrl(), AliCloudImageUtil.SCALED_MFIT, 300, 300))
+                    new Picasso.Builder(getContext()).build().load(AliCloudImageUtil.getScaledUrl(message.getUrl(), AliCloudImageUtil.SCALED_MFIT, 300, 300))
                             .placeholder(failedColorDrawable)
                             .error(failedColorDrawable)
                             .into(target);
@@ -469,7 +470,7 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
         }
 
         @Override
-        public void onBitmapFailed(Drawable errorDrawable) {
+        public void onBitmapFailed(Exception e, Drawable errorDrawable) {
             imageView.setImageDrawable(errorDrawable);
         }
 

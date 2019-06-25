@@ -196,7 +196,7 @@ public class ChatUsersDialogFragment extends BaseFragment implements ChatUsersCo
                     userViewHolder.assistantTag.setVisibility(View.GONE);
                 }
                 String avatar = userModel.getAvatar().startsWith("//") ? "https:" + userModel.getAvatar() : userModel.getAvatar();
-                Picasso.with(getContext()).load(AliCloudImageUtil.getRoundedAvatarUrl(avatar, 64)).into(userViewHolder.avatar);
+                new Picasso.Builder(getContext()).build().load(AliCloudImageUtil.getRoundedAvatarUrl(avatar, 64)).into(userViewHolder.avatar);
                 userViewHolder.privateChatUser.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {

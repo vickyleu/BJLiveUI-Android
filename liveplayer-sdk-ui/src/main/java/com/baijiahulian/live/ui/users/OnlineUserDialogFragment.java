@@ -158,7 +158,7 @@ public class OnlineUserDialogFragment extends BaseDialogFragment implements Onli
                     userViewHolder.presenterTag.setVisibility(View.GONE);
                 String avatar = userModel.getAvatar().startsWith("//") ? "https:" + userModel.getAvatar() : userModel.getAvatar();
                 if(!TextUtils.isEmpty(avatar))
-                    Picasso.with(getContext()).load(AliCloudImageUtil.getRoundedAvatarUrl(avatar, 64)).into(userViewHolder.avatar);
+                    new Picasso.Builder(getContext()).build().load(AliCloudImageUtil.getRoundedAvatarUrl(avatar, 64)).into(userViewHolder.avatar);
             } else if (holder instanceof LoadingViewHolder) {
                 LoadingViewHolder loadingViewHolder = (LoadingViewHolder) holder;
                 loadingViewHolder.progressBar.setIndeterminate(true);

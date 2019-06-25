@@ -1,8 +1,6 @@
 package com.baijiahulian.live.ui.pptmanage;
 
 import android.os.Bundle;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +8,9 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.baijiahulian.common.cropperv2.BJCommonImageCropHelper;
 import com.baijiahulian.common.cropperv2.ThemeConfig;
@@ -249,18 +250,18 @@ public class PPTManageFragment extends BaseDialogFragment implements PPTManageCo
                 int res = getDrawableResByFileExt(presenter.getItem(position).getFileExt());
                 if (res == 0) { // pic
                     String url = AliCloudImageUtil.getScaledUrl(((DocumentModel) presenter.getItem(position)).pageInfoModel.url, AliCloudImageUtil.SCALED_FILL, 50, 50);
-                    Picasso.with(getContext()).load(url).into(docViewHolder.ivIcon);
+                    new Picasso.Builder(getContext()).build().load(url).into(docViewHolder.ivIcon);
                 } else {
-                    Picasso.with(getContext()).load(res).into(docViewHolder.ivIcon);
+                    new Picasso.Builder(getContext()).build().load(res).into(docViewHolder.ivIcon);
                 }
             } else if (holder instanceof UploadingViewHolder) {
                 UploadingViewHolder viewHolder = (UploadingViewHolder) holder;
                 viewHolder.tvTitle.setText(presenter.getItem(position).getFileName());
                 int res = getDrawableResByFileExt(presenter.getItem(position).getFileExt());
                 if (res == 0) {
-                    Picasso.with(getContext()).load(R.drawable.live_ic_file_jpg).into(viewHolder.ivIcon);
+                    new Picasso.Builder(getContext()).build().load(R.drawable.live_ic_file_jpg).into(viewHolder.ivIcon);
                 } else {
-                    Picasso.with(getContext()).load(res).into(viewHolder.ivIcon);
+                    new Picasso.Builder(getContext()).build().load(res).into(viewHolder.ivIcon);
                 }
                 if (presenter.getItem(position).getStatus() == DocumentUploadingModel.UPLOADING) {
                     viewHolder.tvStatus.setText(getString(R.string.live_uploading));

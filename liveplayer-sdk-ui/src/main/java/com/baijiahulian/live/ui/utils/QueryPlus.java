@@ -44,7 +44,7 @@ public class QueryPlus extends Query {
 
     public QueryPlus image(Context context, String url) {
         if (view instanceof ImageView) {
-            Picasso.with(context).load(url).into((ImageView) view);
+            new Picasso.Builder(context).build().load(url).into((ImageView) view);
         }
         return this;
     }
